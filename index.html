@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>SharpScan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d12">
+<style>
+:root{--bg:#0a0d12;--cd:#141922;--cd2:#1b212c;--tx:#eef1f5;--mu:#8b95a5;--bd:#232b38;--up:#27d17f;--dn:#ff5864;--ac:#5b8cff;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 400px at 50% -100px,#18233a,var(--bg));color:var(--tx);font:14px/1.45 system-ui,-apple-system,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;gap:8px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:18px}.logo i{color:var(--ac);font-style:normal}
+.pills{display:flex;gap:6px;flex-wrap:wrap}.pill{font-size:11px;padding:4px 9px;border-radius:12px;background:var(--cd);border:1px solid var(--bd);color:var(--mu)}
+.pill.ok{color:var(--up);border-color:#1d5a3f}.pill.bad{color:var(--dn)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mu);margin-right:5px}.ok .dot{background:var(--up)}.run .dot{animation:p 1.2s infinite}@keyframes p{50%{opacity:.25}}
+nav{display:flex;gap:2px;padding:0 6px;position:sticky;top:0;background:#0a0d12ee;backdrop-filter:blur(8px);z-index:9;border-bottom:1px solid var(--bd);overflow-x:auto}
+nav button{flex:1;min-width:76px;background:none;border:0;color:var(--mu);padding:12px 6px;font-weight:600;font-size:13px;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--tx);border-color:var(--ac)}
+main{max-width:1100px;margin:0 auto;padding:12px}.pg{display:none}.pg.on{display:block}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:13px;margin-bottom:11px}
+h3{margin:0 0 4px;font-size:15px}.mu{color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}.s{font-size:12px}
+.gt{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin:10px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{border:1px solid var(--bd);border-radius:16px;padding:6px 11px;font-size:12px;color:var(--mu);background:var(--cd2)}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}.chip small{opacity:.6}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+button.p,button.x{border:0;border-radius:9px;padding:10px 16px;font-weight:700;font-size:13px;color:#fff;background:linear-gradient(135deg,#5b8cff,#7a5bff)}button.x{background:var(--dn)}
+button.g{background:var(--cd2);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:8px 12px;font-size:12px}
+select,input[type=text],input[type=password],input[type=number]{background:var(--cd2);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:9px;font-size:13px;width:100%}
+.row select{width:auto;max-width:100%}label.f{display:block;font-size:12px;color:var(--mu);margin:10px 0 4px}label.k{display:flex;gap:6px;align-items:center;font-size:13px;margin:6px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:11px}.stats div{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}.stats b{display:block;font-size:20px}
+.sg{background:var(--cd);border:1px solid var(--bd);border-left:4px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}.sg.B{border-left-color:var(--up)}.sg.S{border-left-color:var(--dn)}.sg.hl{box-shadow:0 0 0 2px var(--ac)}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.bdg{padding:3px 10px;border-radius:7px;font-weight:800;font-size:12px;color:#06210f;background:var(--up)}.S .bdg{background:var(--dn);color:#2b0509}
+.cf{margin-left:auto;text-align:right;font-size:12px}.bar{height:5px;background:var(--bd);border-radius:3px;margin-top:3px;width:90px;margin-left:auto}.bar i{display:block;height:100%;border-radius:3px;background:var(--ac)}
+.lv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}.lv div{background:var(--cd2);border-radius:9px;padding:7px;font-size:11px;color:var(--mu)}.lv b{display:block;font-size:13px;color:var(--tx)}
+.m{display:flex;flex-wrap:wrap;gap:4px}.m span{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--cd2);color:var(--mu)}.m .u{background:#12392a;color:var(--up)}.m .d{background:#3d1519;color:var(--dn)}
+details summary{cursor:pointer;color:var(--ac);font-size:12px;margin-top:8px}ul{margin:6px 0 0;padding-left:18px;font-size:12px;color:var(--mu)}li{margin:3px 0}
+.plan{white-space:pre-wrap;font-size:12px;color:var(--tx);background:var(--cd2);border-radius:9px;padding:9px;margin-top:8px}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.q{display:grid;grid-template-columns:1fr 1fr;gap:10px}.q3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:720px){.q{grid-template-columns:1fr}.q3{grid-template-columns:1fr 1fr}.lv{grid-template-columns:repeat(2,1fr)}}
+canvas{width:100%;height:210px;display:block}.tf{display:flex;gap:4px;margin:8px 0;flex-wrap:wrap}.tf button{background:none;border:1px solid var(--bd);color:var(--mu);border-radius:6px;padding:3px 9px;font-size:12px}.tf button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.vd{font-size:11px;font-weight:800;padding:3px 8px;border-radius:7px;background:var(--cd2);color:var(--mu)}.vd.B{background:var(--up);color:#06210f}.vd.S{background:var(--dn);color:#2b0509}
+#toasts{position:fixed;top:8px;left:8px;right:8px;z-index:99;display:flex;flex-direction:column;gap:6px;pointer-events:none}.t{background:#1d2a45;border:1px solid var(--ac);border-radius:12px;padding:11px 14px;font-weight:700;animation:in .25s;pointer-events:auto}.t.B{border-color:var(--up);background:#0f2a1f}.t.S{border-color:var(--dn);background:#2d1217}@keyframes in{from{transform:translateY(-14px);opacity:0}}
+.em{text-align:center;color:var(--mu);padding:26px 10px}.sr{margin-top:10px}.pl{max-height:250px;overflow:auto;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+ol{padding-left:18px;font-size:12px;color:var(--mu)}
+</style></head><body>
+<div id="toasts"></div>
+<header><div class="logo">Sharp<i>Scan</i></div><div class="pills"><span class="pill" id="pRun"><span class="dot"></span>Idle</span><span class="pill" id="pBg"><span class="dot"></span>Background off</span><span class="pill" id="pTg"><span class="dot"></span>Telegram off</span></div></header>
+<nav><button data-p="sg" class="on">Signals</button><button data-p="a">Watchlist</button><button data-p="m">Market Scan</button><button data-p="v">Charts</button><button data-p="k">Alerts</button></nav>
+<main>
+<div id="sg" class="pg on">
+ <div class="stats"><div><b id="gN" class="up">0</b><span class="mu s">setups now</span></div><div><b id="gM">0</b><span class="mu s">markets watched</span></div><div><b id="gT">–</b><span class="mu s">updated</span></div></div>
+ <div class="c s" id="gInfo"></div><div id="gOut"></div></div>
+<div id="a" class="pg">
+ <div class="stats"><div><b id="sW">0</b><span class="mu s">selected</span></div><div><b id="sS" class="up">0</b><span class="mu s">setups</span></div><div><b id="sT">–</b><span class="mu s">last scan</span></div></div>
+ <div class="c"><h3>Your watchlist</h3><div class="mu s">Select the markets to watch. This list is also what the background scanner watches 24/7 once you sync it in the Alerts tab.</div><div id="aPick"></div>
+ <div class="row"><select id="aTf"></select><select id="aInt"><option value="30">every 30s</option><option value="60" selected>every 1 min</option><option value="120">every 2 min</option><option value="300">every 5 min</option></select><button class="p" id="aGo">Scan in this page</button></div><div class="s mu" id="aSt" style="margin-top:8px"></div></div>
+ <div id="aOut"></div></div>
+<div id="m" class="pg">
+ <div class="stats"><div><b id="mW">0</b><span class="mu s">markets</span></div><div><b id="mS" class="up">0</b><span class="mu s">setups</span></div><div><b id="mT">–</b><span class="mu s">last scan</span></div></div>
+ <div class="c"><h3>Scan markets</h3><div class="mu s">Search and select the markets you want, or a whole group, then pick timeframes. Each is checked with all 11 methods. Big selections take a few minutes per scan.</div><div id="mPick"></div><div class="gt">Timeframes</div><div class="chips" id="mF"></div>
+ <div class="row"><select id="mInt"><option value="30">every 30s</option><option value="60" selected>every 1 min</option><option value="120">every 2 min</option><option value="300">every 5 min</option></select><button class="p" id="mGo">Scan in this page</button><button class="g" id="mNow">Scan once</button></div><div class="s mu" id="mSt" style="margin-top:8px"></div></div>
+ <div id="mOut"></div></div>
+<div id="v" class="pg">
+ <div class="chips" style="margin-bottom:10px"><button class="chip on" data-vm="4">4 markets</button><button class="chip" data-vm="1">One market, all timeframes</button></div>
+ <div id="v4"><div class="q" id="vq"></div></div>
+ <div id="v1" style="display:none"><div class="c"><select id="vmSel"></select><div class="s mu" style="margin-top:6px">Arrow shows the trend on each timeframe (EMA 20/50/200). The badge is the scanner’s call.</div></div><div class="q3" id="vmg"></div></div></div>
+<div id="k" class="pg">
+ <div class="c"><h3>Background scanner (alerts when this page is closed)</h3><div class="mu s">A free Cloudflare Worker scans your watchlist every minute, 24/7, and sends Telegram alerts. It also unlocks forex, indices, stocks and futures data.</div>
+ <label class="f">Worker URL</label><input type="text" id="wk" placeholder="https://sharpscan.yourname.workers.dev"><label class="f">Worker password</label><input type="password" id="wp">
+ <div class="gt">Background timeframes</div><div class="chips" id="bgTf"></div>
+ <div class="row"><button class="p" id="bgSave">Save and sync watchlist</button><button class="g" id="bgTest">Test Telegram from worker</button></div><div class="s mu" id="bgSt" style="margin-top:8px"></div>
+ <details><summary>How to set it up (about 10 minutes, once)</summary><ol><li>Sign up free at dash.cloudflare.com. Go to Workers &amp; Pages, then Create, then Hello World. Deploy it, tap Edit code, delete everything, paste the whole worker.js file, and Deploy.</li><li>Storage &amp; Databases, then KV, then Create a namespace named sharpscan.</li><li>Open your worker, Settings, Bindings, Add, KV namespace. Variable name: <b>KV</b>. Pick sharpscan.</li><li>Settings, Variables and Secrets, Add: name <b>KEY</b>, value = a password you choose.</li><li>Settings, Trigger Events, Cron Triggers, Add: <b>* * * * *</b> (every minute).</li><li>Copy the worker’s workers.dev URL and paste it above with your password.</li></ol></details></div>
+ <div class="c"><h3>Telegram</h3><div class="mu s">1) In Telegram open @BotFather, send /newbot, copy the token. 2) Open your new bot and send “hi”. 3) Paste the token and tap Find my chat ID.</div>
+ <label class="f">Bot token</label><input type="password" id="tgT"><label class="f">Chat ID</label><input type="text" id="tgC"><div class="row"><button class="g" id="tgF">Find my chat ID</button><button class="g" id="tgTest">Send test</button></div><div class="s mu" id="tgSt"></div></div>
+ <div class="c"><h3>Alerts in this page</h3><label class="k"><input type="checkbox" id="snd"> Sound</label><label class="k"><input type="checkbox" id="vib"> Vibration</label><label class="k"><input type="checkbox" id="ban"> Banner and flashing tab</label><label class="k"><input type="checkbox" id="pgTg"> Also send Telegram from this page (may duplicate background alerts)</label>
+ <label class="f">Minimum confidence to alert (%)</label><input type="number" id="minConf" min="40" max="95"><label class="f">Don’t repeat the same alert for (minutes)</label><input type="number" id="cool" min="1"><div class="row"><button class="g" id="tAl">Test alert</button></div></div>
+ <div class="mu s" style="padding:6px">Signals are analysis, not financial advice. No method wins every trade; always use the stop loss.</div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id),LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},SV=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+const cfg=Object.assign({snd:true,vib:true,ban:true,pgTg:false,minConf:60,cool:60,tgT:"",tgC:"",wk:"",wp:""},LS("cfg",{}));
+const TF=["1m","5m","15m","1h","4h","1d"],TFM={"1m":1,"5m":5,"15m":15,"1h":60,"4h":240,"1d":1440},HT={"1m":"15m","5m":"1h","15m":"1h","1h":"4h","4h":"1d","1d":null};
+const NAMES={"GC=F":"Gold futures","SI=F":"Silver futures","PL=F":"Platinum","HG=F":"Copper","CL=F":"Crude oil","BZ=F":"Brent oil","NG=F":"Natural gas","ES=F":"S&P 500 futures","NQ=F":"Nasdaq futures","YM=F":"Dow futures","RTY=F":"Russell futures","^GSPC":"S&P 500","^IXIC":"Nasdaq","^DJI":"Dow Jones","^FTSE":"FTSE 100","^GDAXI":"DAX","^N225":"Nikkei 225","^HSI":"Hang Seng"};
+const lab=s=>NAMES[s]||(/^[A-Z]{6}=X$/.test(s)?s.slice(0,3)+"/"+s.slice(3,6):s.replace(".P"," perp"));
+const fx=p=>p>=100?p.toFixed(2):p>=10?p.toFixed(3):p>=1?p.toFixed(5):p.toFixed(6);
+const ema=(a,n)=>{const k=2/(n+1);let e=a[0];return a.map((v,i)=>i?e=v*k+e*(1-k):e)};
+function rsi(c,n=14){let g=0,l=0,o=50;for(let i=1;i<c.length;i++){const d=c[i]-c[i-1],G=Math.max(d,0),L=Math.max(-d,0);if(i<=n){g+=G/n;l+=L/n}else{g=(g*(n-1)+G)/n;l=(l*(n-1)+L)/n}o=l?100-100/(1+g/l):100}return o}
+function atr(r,n=14){let a=0;for(let i=1;i<r.length;i++){const t=Math.max(r[i].h-r[i].l,Math.abs(r[i].h-r[i-1].c),Math.abs(r[i].l-r[i-1].c));a=i<=n?a+t/n:(a*(n-1)+t)/n}return a}
+function sw(r){const H=[],L=[];for(let i=2;i<r.length-2;i++){const x=r[i];if([-2,-1,1,2].every(d=>r[i+d].h<x.h))H.push({i,p:x.h});if([-2,-1,1,2].every(d=>r[i+d].l>x.l))L.push({i,p:x.l})}return{H,L}}
+function stack(r){if(!r||r.length<210)return 0;const c=r.map(x=>x.c),n=c.length-1,a=ema(c,20)[n],b=ema(c,50)[n],d=ema(c,200)[n],P=c[n];return P>b&&a>b&&b>d?1:P<b&&a<b&&b<d?-1:0}
+function analyse(r,htf=0){
+ if(!r||r.length<210)return null;const n=r.length-1,c=r.map(x=>x.c),P=c[n],A=atr(r),k=r[n],p=r[n-1],body=Math.abs(k.c-k.o),rg=k.h-k.l||1e-9;
+ const e20=ema(c,20),e50=ema(c,50),e200=ema(c,200),m12=ema(c,12),m26=ema(c,26),ml=m12.map((v,i)=>v-m26[i]),sg=ema(ml,9),hs=ml.map((v,i)=>v-sg[i]),S=sw(r),V=[];
+ const vt=(nm,w,v,t)=>V.push({nm,w,v,t});
+ const st=P>e50[n]&&e20[n]>e50[n]&&e50[n]>e200[n]?1:P<e50[n]&&e20[n]<e50[n]&&e50[n]<e200[n]?-1:0;
+ vt("Trend",1.5,st,st>0?"Trend: price above EMA20 > 50 > 200, a full bullish stack.":st<0?"Trend: price below EMA20 < 50 < 200, a full bearish stack.":"Trend: EMAs mixed, no clean trend.");
+ const H=S.H.slice(-2),L=S.L.slice(-2);let sv=0,stx="Structure: swings mixed.";
+ if(H.length==2&&L.length==2){if(H[1].p>H[0].p&&L[1].p>L[0].p){sv=1;stx="Structure: higher highs and higher lows."}else if(H[1].p<H[0].p&&L[1].p<L[0].p){sv=-1;stx="Structure: lower highs and lower lows."}}
+ if(S.H.length&&P>S.H.at(-1).p){sv=1;stx="Structure: broke above the last swing high (break of structure)."}else if(S.L.length&&P<S.L.at(-1).p){sv=-1;stx="Structure: broke below the last swing low (break of structure)."}
+ vt("Structure",1.5,sv,stx);
+ const h=hs[n],hp=hs[n-1],mv=h>0?(h>=hp?1:.5):(h<=hp?-1:-.5);vt("Momentum",1,mv,mv>0?"Momentum: MACD histogram positive"+(mv==1?" and rising.":" but fading."):"Momentum: MACD histogram negative"+(mv==-1?" and falling.":" but recovering."));
+ const w=c.slice(-20),mb=w.reduce((a,b)=>a+b)/20,sd=Math.sqrt(w.reduce((a,b)=>a+(b-mb)**2,0)/20),R=rsi(c);
+ const rv=R<30&&P<=mb-2*sd?1:R>70&&P>=mb+2*sd?-1:R<35?.5:R>65?-.5:0;vt("Reversion",.5,rv,rv>0?"Mean reversion: RSI "+R.toFixed(0)+" oversold near the lower band.":rv<0?"Mean reversion: RSI "+R.toFixed(0)+" overbought near the upper band.":"Mean reversion: RSI "+R.toFixed(0)+", no stretch.");
+ const pr=r.slice(-21,-1),hh=Math.max(...pr.map(x=>x.h)),ll=Math.min(...pr.map(x=>x.l)),bo=P>hh?1:P<ll?-1:0;vt("Breakout",1,bo,bo>0?"Breakout: closed above the 20-bar high.":bo<0?"Breakout: closed below the 20-bar low.":"Breakout: still inside the 20-bar range.");
+ const sup=S.L.slice(-6).some(x=>Math.abs(P-x.p)<.6*A),res=S.H.slice(-6).some(x=>Math.abs(P-x.p)<.6*A),sr=sup&&k.c>k.o?1:res&&k.c<k.o?-1:0;vt("Support/Resistance",1,sr,sr>0?"Support: price bouncing off a previous swing low.":sr<0?"Resistance: price rejected at a previous swing high.":"Support/resistance: not at a key level.");
+ const bullE=k.c>k.o&&p.c<p.o&&k.c>p.o&&k.o<p.c,bearE=k.c<k.o&&p.c>p.o&&k.c<p.o&&k.o>p.c,pb=Math.min(k.o,k.c)-k.l>2*body&&body/rg<.35,ps=k.h-Math.max(k.o,k.c)>2*body&&body/rg<.35,q2=r[n-2],ms=q2.c<q2.o&&Math.abs(p.c-p.o)<(q2.o-q2.c)*.4&&k.c>k.o&&k.c>(q2.o+q2.c)/2,es=q2.c>q2.o&&Math.abs(p.c-p.o)<(q2.c-q2.o)*.4&&k.c<k.o&&k.c<(q2.o+q2.c)/2;
+ const cd=(bullE||pb||ms)?1:(bearE||ps||es)?-1:0;vt("Candles",1,cd,cd>0?"Candle pattern: "+(bullE?"bullish engulfing":ms?"morning star":"hammer/pin bar")+".":cd<0?"Candle pattern: "+(bearE?"bearish engulfing":es?"evening star":"shooting star/pin bar")+".":"Candle pattern: none on the last candle.");
+ let fb=0;const lH=S.H.at(-1),lL=S.L.at(-1);if(lH&&lL&&lH.p>lL.p){const rgl=lH.p-lL.p;if(lL.i<lH.i){const rt=(lH.p-P)/rgl;if(rt>=.382&&rt<=.66)fb=1}else{const rt=(P-lL.p)/rgl;if(rt>=.382&&rt<=.66)fb=-1}}
+ vt("Fibonacci",1,fb,fb>0?"Fibonacci: pulled back to the 38–66% zone of the last up-leg.":fb<0?"Fibonacci: bounced into the 38–66% zone of the last down-leg.":"Fibonacci: not in a retracement zone.");
+ const hl=(i,x)=>{let a=-Infinity,b=Infinity;for(let j=i-x+1;j<=i;j++){if(r[j].h>a)a=r[j].h;if(r[j].l<b)b=r[j].l}return(a+b)/2},tk=hl(n,9),kj=hl(n,26),ci=n-26,sa=(hl(ci,9)+hl(ci,26))/2,sb=hl(ci,52),tp=Math.max(sa,sb),bt=Math.min(sa,sb);
+ const ic=P>tp&&tk>kj?1:P<bt&&tk<kj?-1:P>tp?.5:P<bt?-.5:0;vt("Ichimoku",1,ic,ic>0?"Ichimoku: price above the cloud"+(tk>kj?" with Tenkan over Kijun.":"."):ic<0?"Ichimoku: price below the cloud"+(tk<kj?" with Tenkan under Kijun.":"."):"Ichimoku: price inside the cloud (indecision).");
+ const av=r.slice(-21,-1).reduce((a,b)=>a+b.v,0)/20,vv=k.v&&av&&k.v>1.5*av?(k.c>k.o?.5:-.5):0;vt("Volume",.5,vv,vv?"Volume: spike of "+(k.v/av).toFixed(1)+"x average backing the move.":"Volume: normal or not available.");
+ vt("Higher TF",1.5,htf,htf>0?"Higher timeframe trend is bullish.":htf<0?"Higher timeframe trend is bearish.":"Higher timeframe is neutral or unavailable.");
+ const sc=V.reduce((a,x)=>a+x.w*x.v,0),dir=sc>0?1:-1,agree=V.filter(x=>x.v*dir>0).length,opp=V.filter(x=>x.v*dir<0).length,conf=Math.min(95,Math.round(Math.abs(sc)/8*100));
+ let T=null;if(agree>=4&&opp<=2&&conf>=40){const lv=dir>0?S.L.at(-1):S.H.at(-1);let sl=dir>0?Math.min(lv?lv.p:P-2*A,P-A)-.3*A:Math.max(lv?lv.p:P+2*A,P+A)+.3*A;if(Math.abs(P-sl)>3*A)sl=P-dir*3*A;const rk=Math.abs(P-sl);T={dir,entry:P,sl,tp1:P+dir*1.5*rk,tp2:P+dir*3*rk}}
+ return{sc,conf,V,agree,opp,T,P,grade:conf>=80?"A+":conf>=70?"A":conf>=60?"B+":"B",top:V.filter(x=>x.v*dir>0).sort((a,b)=>b.w*b.v*dir-a.w*a.v*dir).slice(0,3).map(x=>x.t)}}
+const mk=(sym,tf,a)=>({sym,tf,...a.T,conf:a.conf,grade:a.grade,agree:a.agree,opp:a.opp,V:a.V,top:a.top,ts:Date.now()});
+function plan(s){const B=s.dir>0,R=Math.abs(s.entry-s.sl),d=TFM[s.tf]*3,du=d>=1440?d/1440+"d":d>=60?d/60+"h":d+"m";
+ return `⏱ WHEN: ${B?"Buy":"Sell"} now at market, or with a limit at ${fx(s.entry)}. Valid for about ${du} (3 candles).\n🚫 Skip it if price runs past ${fx(s.entry+s.dir*.5*R)} before you enter, or closes beyond the stop.\n🔁 At TP1 close half and move the stop to entry; let the rest run to TP2.\n💰 Risk 1% of your balance: lots = (1% of balance) ÷ (${fx(R)} × contract size).`}
+function msgText(s,url){return `${s.dir>0?"🟢 BUY":"🔴 SELL"} ${lab(s.sym)} · ${s.tf}\nConfidence ${s.conf}% (${s.grade}) · ${s.agree}/11 methods agree\n\nEntry ${fx(s.entry)}\nStop loss ${fx(s.sl)}\nTP1 ${fx(s.tp1)} (1.5R)\nTP2 ${fx(s.tp2)} (3R)\n\n${plan(s)}\n\nWhy: ${s.top.join(" | ")}`+(url?`\n\nFull details: ${url}#${encodeURIComponent(s.sym+"|"+s.tf)}`:"")+"\n⚠️ Not financial advice."}
+
+// ---- catalog
+const FXK=["EURUSD","GBPUSD","USDJPY","AUDUSD","USDCAD","USDCHF","NZDUSD","EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD","GBPJPY","GBPCHF","GBPAUD","GBPCAD","GBPNZD","AUDJPY","AUDCAD","AUDCHF","AUDNZD","CADJPY","CADCHF","CHFJPY","NZDJPY","NZDCAD","NZDCHF"].map(x=>x+"=X");
+const GR=["All","Crypto","Futures","Gold & metals","Commodities","Forex","Indices","Stocks"],CAT=[],seen=new Set(),addC=(s,g)=>{if(!seen.has(s)){seen.add(s);CAT.push({s,g})}};
+const srcOf=s=>/USDT\.P$/.test(s)?"f":/USDT$/.test(s)?"b":"y";
+["BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT","XRPUSDT","ADAUSDT","DOGEUSDT","AVAXUSDT","LINKUSDT","DOTUSDT","LTCUSDT","TRXUSDT","NEARUSDT","ATOMUSDT"].forEach(x=>addC(x,"Crypto"));
+["BTCUSDT.P","ETHUSDT.P","SOLUSDT.P","ES=F","NQ=F","YM=F","RTY=F"].forEach(x=>addC(x,"Futures"));["PAXGUSDT","XAUTUSDT","XAUUSDT.P","XAGUSDT.P","GC=F","SI=F","PL=F","HG=F"].forEach(x=>addC(x,"Gold & metals"));["CL=F","BZ=F","NG=F"].forEach(x=>addC(x,"Commodities"));
+["EURUSDT","GBPUSDT","AUDUSDT",...FXK].forEach(x=>addC(x,"Forex"));["^GSPC","^IXIC","^DJI","^FTSE","^GDAXI","^N225","^HSI"].forEach(x=>addC(x,"Indices"));
+["AAPL","MSFT","NVDA","TSLA","AMZN","GOOGL","META","AMD","NFLX","JPM","BAC","XOM","DIS","INTC","KO","PYPL","COIN","BABA","V","WMT","PFE","UBER","SHOP","PLTR"].forEach(x=>addC(x,"Stocks"));
+async function jf(u,h){const r=await fetch(u,h?{headers:h}:undefined);if(!r.ok)throw"HTTP "+r.status;return r.json()}
+async function getJ(us){for(const u of us){try{return await jf(u)}catch{}}throw"x"}
+async function loadMarkets(){const ok=t=>t.symbol.endsWith("USDT")&&!/(UP|DOWN|BULL|BEAR)USDT$/.test(t.symbol)&&+t.quoteVolume>2e6,by=(a,b)=>b.quoteVolume-a.quoteVolume;
+ try{(await getJ(["https://api.binance.com/api/v3/ticker/24hr","https://data-api.binance.vision/api/v3/ticker/24hr"])).filter(ok).sort(by).forEach(t=>addC(t.symbol,["EURUSDT","GBPUSDT","AUDUSDT"].includes(t.symbol)?"Forex":"Crypto"))}catch{}
+ try{(await jf("https://fapi.binance.com/fapi/v1/ticker/24hr")).filter(ok).sort(by).forEach(t=>addC(t.symbol+".P",/^(XAU|XAG)/.test(t.symbol)?"Gold & metals":"Futures"))}catch{}
+ aP.refresh();mP.refresh();refreshLive();fillVm()}
+function picker(host,store,onCh){const sel=new Set(LS(store,[]));let grp="All",qs="";
+ host.innerHTML='<input type="text" class="sr" placeholder="Search markets, e.g. BTC, gold, EUR, Apple"><div class="chips gf" style="margin-top:8px"></div><div class="row"><button class="g ba">Select all shown</button><button class="g bc">Clear</button><span class="s mu cn"></span></div><div class="pl"></div>';
+ const gf=host.querySelector(".gf"),pl=host.querySelector(".pl"),cn=host.querySelector(".cn");
+ GR.forEach(g=>{const b=document.createElement("button");b.className="chip"+(g===grp?" on":"");b.textContent=g;b.onclick=()=>{grp=g;[...gf.children].forEach(x=>x.classList.toggle("on",x===b));draw()};gf.appendChild(b)});
+ const shown=()=>CAT.filter(x=>(grp==="All"||x.g===grp)&&(lab(x.s)+" "+x.s+" "+x.g).toLowerCase().includes(qs));
+ const save=()=>{SV(store,[...sel]);cn.textContent=sel.size+" selected";onCh&&onCh()};
+ function draw(){const l=shown();pl.innerHTML="";l.slice(0,150).forEach(x=>{const b=document.createElement("button");b.className="chip"+(sel.has(x.s)?" on":"");b.innerHTML=lab(x.s)+(srcOf(x.s)==="y"?" <small>relay</small>":"");b.onclick=()=>{sel.has(x.s)?sel.delete(x.s):sel.add(x.s);b.classList.toggle("on");save()};pl.appendChild(b)});if(l.length>150){const n=document.createElement("div");n.className="s mu";n.style.width="100%";n.textContent=`Showing 150 of ${l.length}. Search to narrow down.`;pl.appendChild(n)}if(!l.length)pl.innerHTML='<div class="s mu">No match.</div>';cn.textContent=sel.size+" selected"}
+ host.querySelector(".sr").oninput=e=>{qs=e.target.value.trim().toLowerCase();draw()};
+ host.querySelector(".ba").onclick=()=>{shown().forEach(x=>sel.add(x.s));draw();save()};host.querySelector(".bc").onclick=()=>{sel.clear();draw();save()};
+ draw();return{get:()=>[...sel],refresh:draw}}
+// ---- data
+const chain={b:Promise.resolve(),f:Promise.resolve(),y:Promise.resolve()},gap={b:70,f:70,y:120},sleep=ms=>new Promise(r=>setTimeout(r,ms)),cache={};
+function q(s,fn){const p=chain[s].then(fn);chain[s]=p.catch(()=>{}).then(()=>sleep(gap[s]));return p}
+const wkU=()=>cfg.wk.replace(/\/+$/,"");
+function candles(sym,tf,n=300){const k=sym+tf,h=cache[k];if(h&&Date.now()-h.t<15000)return Promise.resolve(h.d);const s=srcOf(sym);
+ return q(s,async()=>{let d;const b=sym.replace(".P","");
+  if(s==="b"){let j;try{j=await jf(`https://api.binance.com/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`)}catch{j=await jf(`https://data-api.binance.vision/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`)}d=j.map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
+  else if(s==="f"){d=(await jf(`https://fapi.binance.com/fapi/v1/klines?symbol=${b}&interval=${tf}&limit=${n}`)).map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
+  else{if(!cfg.wk)throw"Needs the background worker (Alerts tab)";d=await jf(`${wkU()}/candles?s=${encodeURIComponent(sym)}&tf=${tf}`,{"x-key":cfg.wp})}
+  cache[k]={t:Date.now(),d};return d})}
+// ---- alerts
+let AC=null;function beep0(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume()}catch{}}
+function beep(){try{beep0();[0,.28].forEach(t=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=t?1040:780;o.connect(g);g.connect(AC.destination);g.gain.setValueAtTime(.25,AC.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+.25);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+.26)})}catch{}}
+let fl=null;const T0=document.title;function flash(t){clearInterval(fl);let i=0;fl=setInterval(()=>{document.title=i++%2?T0:t;if(i>14||document.hasFocus()){clearInterval(fl);document.title=T0}},900)}
+function toast(t,c){const d=document.createElement("div");d.className="t "+c;d.textContent=t;$("toasts").appendChild(d);setTimeout(()=>d.remove(),9000);d.onclick=()=>d.remove()}
+const appUrl=()=>location.protocol.startsWith("http")?location.href.split("#")[0]:"";
+function pill(id,ok,t){const e=$(id);e.className="pill "+(ok?"ok":"bad");e.innerHTML='<span class="dot"></span>'+t}
+async function tg(text){if(!cfg.tgT||!cfg.tgC)return false;try{const r=await fetch(`https://api.telegram.org/bot${cfg.tgT}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:cfg.tgC,text,disable_web_page_preview:true})});const j=await r.json();pill("pTg",j.ok,j.ok?"Telegram on":"Telegram error");return j.ok}catch{pill("pTg",false,"Telegram error");return false}}
+function fire(s,test){const t=`${s.dir>0?"BUY":"SELL"} ${lab(s.sym)} ${s.tf} · ${s.conf}%`;
+ if(cfg.snd)beep();if(cfg.vib&&navigator.vibrate)navigator.vibrate([250,100,250]);if(cfg.ban){toast(t,s.dir>0?"B":"S");flash("🔔 "+t)}
+ try{if(Notification.permission==="granted")new Notification("SharpScan",{body:t})}catch{}
+ if(test||!cfg.wk||cfg.pgTg)tg(msgText(s,appUrl()))}
+const last=LS("last",{});function maybe(s){const k=s.sym+s.tf+s.dir;if(s.conf<cfg.minConf)return;if(Date.now()-(last[k]||0)<cfg.cool*60000)return;last[k]=Date.now();SV("last",last);fire(s)}
+// ---- scanner (in this page)
+function mkScan(o){let run=false,tm=null,gen=0;
+ async function once(){const pairs=o.pairs();if(!pairs.length){o.st("Select at least one market.");return}const g=gen,res=new Map();let bad=0;
+  for(let i=0;i<pairs.length&&g===gen;i++){const[sym,tf]=pairs[i];o.st(`Scanning ${lab(sym)} ${tf} (${i+1}/${pairs.length})…`);
+   try{const r=await candles(sym,tf);let ht=0;if(HT[tf]){try{ht=stack(await candles(sym,HT[tf]))}catch{}}const a=analyse(r,ht);if(a&&a.T){const s=mk(sym,tf,a);res.set(sym+tf,s);maybe(s)}}catch(e){bad++;if(bad===1)o.err(String(e))}
+   o.draw([...res.values()])}
+  if(g===gen){o.done();o.st(`Last scan ${new Date().toLocaleTimeString()}`+(bad?` · ${bad} unavailable`:"")+(run?` · next in ${o.iv()}s`:""))}}
+ async function loop(){await once();if(run)tm=setTimeout(loop,o.iv()*1000)}
+ return{toggle(b){run=!run;gen++;clearTimeout(tm);b.textContent=run?"Stop":"Scan in this page";b.className=run?"x":"p";$("pRun").className="pill "+(run?"ok run":"");$("pRun").innerHTML='<span class="dot"></span>'+(run?"Scanning":"Idle");if(run){beep0();if(window.Notification&&Notification.permission==="default")Notification.requestPermission();loop()}else o.st("Stopped.")},once(){gen++;once()}}}
+const reg={};
+function ago(t){const m=Math.round((Date.now()-t)/60000);return m<1?"just now":m<60?m+" min ago":Math.round(m/60)+" h ago"}
+function render(el,list){list.sort((a,b)=>b.conf-a.conf);list.forEach(s=>reg[s.sym+"|"+s.tf]=s);
+ el.innerHTML=list.length?list.map(s=>{const B=s.dir>0,id=s.sym+"|"+s.tf;return`<div class="sg ${B?"B":"S"}" data-id="${id}"><div class="top"><span class="bdg">${B?"BUY":"SELL"}</span><b>${lab(s.sym)}</b><span class="mu s">${s.tf}</span><span class="cf mu">grade <b style="color:var(--tx);font-size:16px">${s.grade}</b><div class="bar"><i style="width:${s.conf}%"></i></div></span></div>
+ <div class="lv"><div>Entry<b>${fx(s.entry)}</b></div><div>Stop loss<b class="dn">${fx(s.sl)}</b></div><div>TP1 · 1.5R<b class="up">${fx(s.tp1)}</b></div><div>TP2 · 3R<b class="up">${fx(s.tp2)}</b></div></div>
+ <div class="s mu" style="margin-bottom:6px">${s.conf}% confidence · ${s.agree} of 11 methods agree${s.ts?" · found "+ago(s.ts):""}</div><div class="m">${s.V.map(x=>`<span class="${x.v>0?"u":x.v<0?"d":""}">${x.nm}</span>`).join("")}</div>
+ <details><summary>Trade plan, reasons and method</summary><div class="plan">${plan(s)}</div><ul>${s.V.map(x=>`<li>${x.t}</li>`).join("")}</ul></details>
+ <div class="acts"><button class="g" data-a="tf" data-k="${id}">All timeframes</button><button class="g" data-a="cp" data-k="${id}">Copy</button><button class="g" data-a="tg" data-k="${id}">Send to Telegram</button></div></div>`}).join(""):`<div class="em">No high-confluence setups right now.<br>That’s normal: only trades where most methods agree are shown.</div>`}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-a]");if(!b)return;const s=reg[b.dataset.k];if(!s)return;
+ if(b.dataset.a==="cp"){try{await navigator.clipboard.writeText(msgText(s,appUrl()));b.textContent="Copied"}catch{b.textContent="Copy failed"}}
+ else if(b.dataset.a==="tg"){b.textContent=(await tg(msgText(s,appUrl())))?"Sent":"Set up Telegram first"}
+ else{$("vmSel").value=s.sym;go("v",1);setVm("1")}});
+function chips(el,items,store){const sel=new Set(LS(store,[]));el.innerHTML="";items.forEach(s=>{const b=document.createElement("button");b.className="chip"+(sel.has(s)?" on":"");b.textContent=s;b.onclick=()=>{sel.has(s)?sel.delete(s):sel.add(s);b.classList.toggle("on");SV(store,[...sel])};el.appendChild(b)});return{get:()=>[...sel],set(a){sel.clear();a.forEach(x=>sel.add(x));SV(store,[...sel]);[...el.children].forEach((b,i)=>b.classList.toggle("on",sel.has(items[i])))}}}
+const hhmm=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+// Watchlist
+$("aTf").innerHTML=TF.map(t=>`<option ${t==="15m"?"selected":""}>${t}</option>`).join("");
+const aP=picker($("aPick"),"aSel",()=>{$("sW").textContent=aP.get().length;$("gM").textContent=cfg.wk?$("gM").textContent:aP.get().length});$("sW").textContent=aP.get().length;
+const A=mkScan({pairs:()=>aP.get().map(s=>[s,$("aTf").value]),iv:()=>+$("aInt").value,st:t=>$("aSt").textContent=t,err:t=>toast(t,""),draw:l=>{render($("aOut"),l);$("sS").textContent=l.length},done:()=>$("sT").textContent=hhmm()});
+$("aGo").onclick=e=>A.toggle(e.target);$("aOut").innerHTML='<div class="em">Select markets above and tap Scan in this page.</div>';
+// Market scan
+const mP=picker($("mPick"),"mSelS",()=>$("mW").textContent=mP.get().length),mF=chips($("mF"),TF,"mF");
+if(!mF.get().length)mF.set(["15m","1h"]);$("mW").textContent=mP.get().length;
+const M=mkScan({pairs:()=>mP.get().flatMap(s=>mF.get().map(t=>[s,t])),iv:()=>+$("mInt").value,st:t=>$("mSt").textContent=t,err:t=>toast(t,""),draw:l=>{render($("mOut"),l);$("mS").textContent=l.length},done:()=>$("mT").textContent=hhmm()});
+$("mGo").onclick=e=>M.toggle(e.target);$("mNow").onclick=()=>{beep0();M.once()};$("mOut").innerHTML='<div class="em">Select markets and timeframes, then scan.</div>';
+// Charts
+function drawC(cv,r,N){const W=cv.width=cv.clientWidth*2,H=cv.height=cv.clientHeight*2,x=cv.getContext("2d"),v=r.slice(-N),c=r.map(z=>z.c),e20=ema(c,20).slice(-N),e50=ema(c,50).slice(-N),hi=Math.max(...v.map(z=>z.h)),lo=Math.min(...v.map(z=>z.l)),Y=p=>H-8-(p-lo)/(hi-lo||1)*(H-16),w=W/N;x.clearRect(0,0,W,H);
+ v.forEach((z,i)=>{const X=i*w+w/2;x.strokeStyle=x.fillStyle=z.c>=z.o?"#27d17f":"#ff5864";x.beginPath();x.moveTo(X,Y(z.h));x.lineTo(X,Y(z.l));x.stroke();x.fillRect(X-w*.35,Y(Math.max(z.o,z.c)),w*.7,Math.max(2,Math.abs(Y(z.o)-Y(z.c))))});
+ [[e20,"#5b8cff"],[e50,"#f5b942"]].forEach(([e,col])=>{x.strokeStyle=col;x.lineWidth=2;x.beginPath();e.forEach((p,i)=>i?x.lineTo(i*w+w/2,Y(p)):x.moveTo(w/2,Y(p)));x.stroke();x.lineWidth=1})}
+const opts=v=>CAT.map(x=>`<option value="${x.s}" ${x.s===v?"selected":""}>${lab(x.s)}</option>`).join("");
+const panels=[],dflt=LS("vSel",["BTCUSDT","ETHUSDT","PAXGUSDT","SOLUSDT"]);
+for(let i=0;i<4;i++){const d=document.createElement("div");d.className="c";d.innerHTML=`<div class="top"><select class="sy" style="width:auto;max-width:55%">${opts(dflt[i])}</select><b class="pr"></b><span class="ch s"></span><span class="vd" style="margin-left:auto">…</span></div><div class="tf">${TF.map(t=>`<button class="${t==="15m"?"on":""}">${t}</button>`).join("")}</div><canvas></canvas><div class="s mu st"></div>`;$("vq").appendChild(d);
+ const P={d,tf:"15m"};panels.push(P);d.querySelector(".sy").onchange=()=>{SV("vSel",panels.map(p=>p.d.querySelector(".sy").value));load(P)};
+ d.querySelectorAll(".tf button").forEach(b=>b.onclick=()=>{d.querySelectorAll(".tf button").forEach(x=>x.classList.remove("on"));b.classList.add("on");P.tf=b.textContent;load(P)})}
+function badge(v,a,conf){v.className="vd"+(a&&a.T&&a.conf>=conf?(a.T.dir>0?" B":" S"):"");v.textContent=a&&a.T&&a.conf>=conf?(a.T.dir>0?"BUY ":"SELL ")+a.conf+"%":"WAIT"}
+async function load(P){const s=P.d.querySelector(".sy").value,st=P.d.querySelector(".st");try{const r=await candles(s,P.tf,300);drawC(P.d.querySelector("canvas"),r,80);const l=r.at(-1),f=r.at(-2),ch=(l.c-f.c)/f.c*100;P.d.querySelector(".pr").textContent=fx(l.c);const e=P.d.querySelector(".ch");e.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";e.className="ch s "+(ch>=0?"up":"dn");badge(P.d.querySelector(".vd"),analyse(r,0),50);st.textContent="Updated "+new Date().toLocaleTimeString()}catch(e){st.textContent=String(e)}}
+function refreshLive(){panels.forEach(p=>{const e=p.d.querySelector(".sy"),v=e.value;e.innerHTML=opts(v)})}
+// one market, all timeframes
+$("vmg").innerHTML=TF.map(t=>`<div class="c"><div class="top"><b>${t}</b><span class="s" id="va${t}"></span><span class="ch s" id="vc${t}"></span><span class="vd" id="vv${t}" style="margin-left:auto">…</span></div><canvas id="vk${t}" style="height:120px;margin-top:6px"></canvas></div>`).join("");
+const fillVm=()=>{const v=$("vmSel").value||LS("vmSym","BTCUSDT");$("vmSel").innerHTML=opts(v)};fillVm();
+let vmGen=0;async function vmLoad(){const g=++vmGen,s=$("vmSel").value;SV("vmSym",s);
+ for(const t of TF){if(g!==vmGen)return;const v=$("vv"+t);try{const r=await candles(s,t,300);let ht=0;if(HT[t]){try{ht=stack(await candles(s,HT[t],300))}catch{}}
+  drawC($("vk"+t),r,60);const tr=stack(r),l=r.at(-1),f=r.at(-2),ch=(l.c-f.c)/f.c*100,a=$("va"+t);a.textContent=tr>0?"▲ uptrend":tr<0?"▼ downtrend":"▬ no trend";a.className="s "+(tr>0?"up":tr<0?"dn":"mu");
+  const c=$("vc"+t);c.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";c.className="ch s "+(ch>=0?"up":"dn");badge(v,analyse(r,ht),50)}catch(e){v.textContent="n/a";v.className="vd"}}}
+$("vmSel").onchange=vmLoad;
+function setVm(m){document.querySelectorAll("[data-vm]").forEach(b=>b.classList.toggle("on",b.dataset.vm===m));$("v4").style.display=m==="4"?"":"none";$("v1").style.display=m==="1"?"":"none";m==="4"?tick():vmLoad()}
+document.querySelectorAll("[data-vm]").forEach(b=>b.onclick=()=>setVm(b.dataset.vm));
+const tick=()=>panels.forEach(load);setInterval(()=>{if($("v").classList.contains("on")){$("v4").style.display!=="none"?tick():vmLoad()}},30000);
+// Signals (from background worker)
+let pend=decodeURIComponent((location.hash||"").slice(1));
+async function loadSig(){const info=$("gInfo");
+ if(!cfg.wk){info.innerHTML="<b>Background scanner is not set up yet.</b><br>It scans your watchlist every minute, even when this page is closed, and sends each setup to Telegram with entry, stop loss, targets and when to trade. Set it up in the Alerts tab (about 10 minutes, free). Until then use the Watchlist and Market Scan pages.";return}
+ try{const j=await jf(wkU()+"/setups",{"x-key":cfg.wp});$("gN").textContent=j.setups.length;$("gM").textContent=j.watch;$("gT").textContent=j.run?new Date(j.run).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"–";
+  const cyc=Math.max(1,Math.ceil(j.watch*j.tfs.length/12));info.innerHTML=`Background scanner on: ${j.watch} markets × ${j.tfs.join(", ")||"no timeframes"}. Each is re-checked about every ${cyc} min. Setups stay listed while they are still valid.`;
+  render($("gOut"),j.setups);pill("pBg",true,"Background on");
+  if(pend){const el=[...document.querySelectorAll("#gOut .sg")].find(x=>x.dataset.id===pend);if(el){el.classList.add("hl");el.querySelector("details").open=true;el.scrollIntoView({block:"center"})}pend=""}
+ }catch(e){info.textContent="Can’t reach the background scanner: "+e+". Check the URL and password in the Alerts tab.";pill("pBg",false,"Background error")}}
+setInterval(()=>{if($("sg").classList.contains("on"))loadSig()},30000);
+// nav
+function go(p,skip){document.querySelectorAll("nav button,.pg").forEach(x=>x.classList.remove("on"));document.querySelector(`nav [data-p="${p}"]`).classList.add("on");$(p).classList.add("on");if(p==="v"&&!skip)setVm($("v1").style.display==="none"?"4":"1");if(p==="sg")loadSig()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.p));
+// settings
+["snd","vib","ban","pgTg"].forEach(k=>{$(k).checked=cfg[k];$(k).onchange=()=>{cfg[k]=$(k).checked;SV("cfg",cfg)}});
+["minConf","cool","tgT","tgC","wk","wp"].forEach(k=>{$(k).value=cfg[k];$(k).oninput=()=>{cfg[k]=["minConf","cool"].includes(k)?+$(k).value:$(k).value.trim();SV("cfg",cfg)}});
+const bgT=chips($("bgTf"),TF,"bgTf");if(!bgT.get().length)bgT.set(["15m","1h"]);
+const demo={sym:"BTCUSDT",tf:"15m",dir:1,conf:78,grade:"A",agree:8,entry:97000,sl:96400,tp1:97900,tp2:98800,top:["Trend: bullish stack","Momentum rising","Pullback to support"]};
+$("tAl").onclick=()=>{beep0();fire(demo,true)};
+$("tgTest").onclick=async()=>{$("tgSt").textContent=(await tg("✅ SharpScan is connected. Alerts will arrive here."))?"Sent. Check Telegram.":"Failed. Check the token and chat ID, and that you messaged the bot first."};
+$("tgF").onclick=async()=>{try{const j=await jf(`https://api.telegram.org/bot${cfg.tgT}/getUpdates`);const m=[...j.result].reverse().find(u=>u.message);if(!m){$("tgSt").textContent="No message found. Send “hi” to your bot first, then try again.";return}cfg.tgC=String(m.message.chat.id);$("tgC").value=cfg.tgC;SV("cfg",cfg);$("tgSt").textContent="Chat ID found. Tap Send test."}catch{$("tgSt").textContent="Couldn’t read updates. Check the token."}};
+$("bgSave").onclick=async()=>{const st=$("bgSt");if(!cfg.wk||!cfg.wp){st.textContent="Enter the worker URL and password first.";return}
+ const w=aP.get(),t=bgT.get();if(!w.length||!t.length){st.textContent="Select markets on the Watchlist page and at least one timeframe here.";return}
+ try{const r=await fetch(wkU()+"/config",{method:"POST",headers:{"x-key":cfg.wp,"Content-Type":"application/json"},body:JSON.stringify({watch:w,tfs:t,minConf:cfg.minConf,cool:cfg.cool,tgT:cfg.tgT,tgC:cfg.tgC,appUrl:appUrl()})});const j=await r.json();
+  if(!r.ok)throw j.error||r.status;st.textContent=`Synced ${w.length} markets × ${t.length} timeframes. Each is re-checked about every ${Math.ceil(j.pairs/12)} min.`+(cfg.tgT&&cfg.tgC?"":" Add Telegram below to get alerts.")+(appUrl()?"":" Host this page online so Telegram links open it.");pill("pBg",true,"Background on")}catch(e){st.textContent="Failed: "+e;pill("pBg",false,"Background error")}};
+$("bgTest").onclick=async()=>{try{const r=await fetch(wkU()+"/test",{headers:{"x-key":cfg.wp}});const j=await r.json();$("bgSt").textContent=j.ok?"Sent. Check Telegram.":"Failed: save and sync first, and check the Telegram token and chat ID."}catch(e){$("bgSt").textContent="Can’t reach the worker."}};
+if(cfg.tgT&&cfg.tgC)pill("pTg",true,"Telegram on");
+$("gOut").innerHTML='<div class="em">Nothing yet.</div>';
+loadMarkets();loadSig();if(pend)go("sg");
+</script></body></html>
