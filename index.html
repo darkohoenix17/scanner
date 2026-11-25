@@ -40,11 +40,11 @@ ol{padding-left:18px;font-size:12px;color:var(--mu)}
 </style></head><body>
 <div id="toasts"></div>
 <header><div class="logo">Sharp<i>Scan</i></div><div class="pills"><span class="pill" id="pRun"><span class="dot"></span>Idle</span><span class="pill" id="pBg"><span class="dot"></span>Background off</span><span class="pill" id="pTg"><span class="dot"></span>Telegram off</span></div></header>
-<nav><button data-p="sg" class="on">Signals</button><button data-p="a">Watchlist</button><button data-p="m">Market Scan</button><button data-p="v">Charts</button><button data-p="k">Alerts</button></nav>
+<nav><button data-p="sg" class="on">Signals</button><button data-p="a">Watchlist</button><button data-p="m">Market Scan</button><button data-p="bt">Backtest</button><button data-p="v">Charts</button><button data-p="k">Alerts</button></nav>
 <main>
 <div id="sg" class="pg on">
  <div class="stats"><div><b id="gN" class="up">0</b><span class="mu s">setups now</span></div><div><b id="gM">0</b><span class="mu s">markets watched</span></div><div><b id="gT">–</b><span class="mu s">updated</span></div></div>
- <div class="c s" id="gInfo"></div><div id="gOut"></div></div>
+ <div id="gScore"></div><div class="c s" id="gInfo"></div><div id="gOut"></div></div>
 <div id="a" class="pg">
  <div class="stats"><div><b id="sW">0</b><span class="mu s">selected</span></div><div><b id="sS" class="up">0</b><span class="mu s">setups</span></div><div><b id="sT">–</b><span class="mu s">last scan</span></div></div>
  <div class="c"><h3>Your watchlist</h3><div class="mu s">Select the markets to watch. This list is also what the background scanner watches 24/7 once you sync it in the Alerts tab.</div><div id="aPick"></div>
@@ -55,6 +55,16 @@ ol{padding-left:18px;font-size:12px;color:var(--mu)}
  <div class="c"><h3>Scan markets</h3><div class="mu s">Search and select the markets you want, or a whole group, then pick timeframes. Each is checked with all 11 methods. Big selections take a few minutes per scan.</div><div id="mPick"></div><div class="gt">Timeframes</div><div class="chips" id="mF"></div>
  <div class="row"><select id="mInt"><option value="30">every 30s</option><option value="60" selected>every 1 min</option><option value="120">every 2 min</option><option value="300">every 5 min</option></select><button class="p" id="mGo">Scan in this page</button><button class="g" id="mNow">Scan once</button></div><div class="s mu" id="mSt" style="margin-top:8px"></div></div>
  <div id="mOut"></div></div>
+<div id="bt" class="pg">
+ <div class="c"><h3>Backtest</h3><div class="mu s">Replays the scanner on past candles with strict rules: it enters on the next candle’s open, checks the stop before targets, charges trading costs, then tests the same rules on the last 40% of history that it never optimised on. Use it to see what has really worked before trusting a setup.</div>
+ <div id="bPick"></div><div class="gt">Timeframes</div><div class="chips" id="bF"></div>
+ <div class="row"><select id="bN"><option value="1000">1,000 candles</option><option value="2000" selected>2,000 candles</option><option value="3000">3,000 candles</option></select><span class="s mu">Cost per trade (R)</span><input type="number" id="bCost" value="0.08" step="0.01" style="width:80px"></div>
+ <div class="gt">Filters (they also apply to live alerts once applied)</div>
+ <div class="q"><div><label class="f">Min confidence %</label><input type="number" id="fConf"></div><div><label class="f">Min methods agreeing (4 to 8)</label><input type="number" id="fAgree"></div><div><label class="f">Min ADX (0 = off, 18 = skip choppy)</label><input type="number" id="fAdx"></div><div><label class="f">Min volatility rank % (0 = off)</label><input type="number" id="fVp"></div><div><label class="f">Session start (UTC hour, blank = all day)</label><input type="number" id="fH1" min="0" max="23"></div><div><label class="f">Session end (UTC hour)</label><input type="number" id="fH2" min="0" max="23"></div></div>
+ <label class="k"><input type="checkbox" id="fHtf"> Higher timeframe must agree</label>
+ <div class="row"><button class="p" id="bRun">Run backtest</button><button class="g" id="bRe">Recalculate</button><button class="g" id="bOpt">Find best filters</button></div><div class="s mu" id="bSt" style="margin-top:8px"></div></div>
+ <div id="bOut"></div>
+ <div class="c"><div class="row" style="margin-top:0"><button class="p" id="bApply">Apply filters and approve passing markets</button><button class="g" id="bClear">Clear approvals</button></div><div class="s mu" id="bAp" style="margin-top:8px">Approved markets are the only ones that send alerts. After applying, go to Alerts and tap Save and sync.</div></div></div>
 <div id="v" class="pg">
  <div class="chips" style="margin-bottom:10px"><button class="chip on" data-vm="4">4 markets</button><button class="chip" data-vm="1">One market, all timeframes</button></div>
  <div id="v4"><div class="q" id="vq"></div></div>
@@ -63,17 +73,27 @@ ol{padding-left:18px;font-size:12px;color:var(--mu)}
  <div class="c"><h3>Background scanner (alerts when this page is closed)</h3><div class="mu s">A free Cloudflare Worker scans your watchlist every minute, 24/7, and sends Telegram alerts. It also unlocks forex, indices, stocks and futures data.</div>
  <label class="f">Worker URL</label><input type="text" id="wk" placeholder="https://sharpscan.yourname.workers.dev"><label class="f">Worker password</label><input type="password" id="wp">
  <div class="gt">Background timeframes</div><div class="chips" id="bgTf"></div>
+ <label class="k"><input type="checkbox" id="news"> Skip setups within 30 minutes of high-impact news (forex, gold, indices, from a free public calendar)</label>
  <div class="row"><button class="p" id="bgSave">Save and sync watchlist</button><button class="g" id="bgTest">Test Telegram from worker</button></div><div class="s mu" id="bgSt" style="margin-top:8px"></div>
  <details><summary>How to set it up (about 10 minutes, once)</summary><ol><li>Sign up free at dash.cloudflare.com. Go to Workers &amp; Pages, then Create, then Hello World. Deploy it, tap Edit code, delete everything, paste the whole worker.js file, and Deploy.</li><li>Storage &amp; Databases, then KV, then Create a namespace named sharpscan.</li><li>Open your worker, Settings, Bindings, Add, KV namespace. Variable name: <b>KV</b>. Pick sharpscan.</li><li>Settings, Variables and Secrets, Add: name <b>KEY</b>, value = a password you choose.</li><li>Settings, Trigger Events, Cron Triggers, Add: <b>* * * * *</b> (every minute).</li><li>Copy the worker’s workers.dev URL and paste it above with your password.</li></ol></details></div>
+<div class="c"><h3>MT5 account (via MetaApi)</h3><div class="mu s">Connects your MT5 account in the cloud, no PC needed. Gives broker prices for analysis and lets you trade your account from a setup. <b>Start with a demo account.</b> Create a free account at metaapi.cloud, add your MT5 account there, then copy the API token and the account ID.</div>
+ <label class="f">MetaApi token</label><input type="password" id="mtTok"><label class="f">Account ID</label><input type="text" id="mtAcc"><label class="f">Region (shown in MetaApi, usually new-york)</label><input type="text" id="mtReg"><label class="f">Broker symbol suffix (if your symbols look like EURUSDm, enter m)</label><input type="text" id="mtSuf">
+ <label class="f">Symbol overrides, one per line, like: GC=F > XAUUSDm</label><textarea id="mtMap" rows="3" style="width:100%;background:var(--cd2);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:9px;font-size:13px"></textarea>
+ <label class="k"><input type="checkbox" id="mtData"> Use MT5 prices for analysis (falls back to other sources if unavailable)</label>
+ <div class="gt">Trading limits</div><label class="f">Risk per trade (% of equity, capped at 2)</label><input type="number" id="mtRisk" step="0.1" min="0.1" max="2"><label class="f">Max open trades</label><input type="number" id="mtMaxOpen" min="1" max="10"><label class="f">Max auto-trades per day</label><input type="number" id="mtMaxDay" min="1" max="20"><label class="f">Min confidence for auto-trades (%)</label><input type="number" id="mtMin" min="50" max="95"><label class="f">Daily loss limit (% of equity, auto-trading pauses when hit)</label><input type="number" id="mtMaxDD" min="0.5" max="20" step="0.5">
+ <label class="k"><input type="checkbox" id="mtAck"> I understand trading can lose money and that I’m responsible for my account</label><label class="k"><input type="checkbox" id="mtAuto"> Turn on auto-trading (needs the box above)</label>
+ <div class="row"><button class="g" id="mtTest">Test MT5 connection</button></div><div class="s mu" id="mtSt" style="margin-top:8px">After changing anything here, tap Save and sync watchlist above.</div></div>
  <div class="c"><h3>Telegram</h3><div class="mu s">1) In Telegram open @BotFather, send /newbot, copy the token. 2) Open your new bot and send “hi”. 3) Paste the token and tap Find my chat ID.</div>
  <label class="f">Bot token</label><input type="password" id="tgT"><label class="f">Chat ID</label><input type="text" id="tgC"><div class="row"><button class="g" id="tgF">Find my chat ID</button><button class="g" id="tgTest">Send test</button></div><div class="s mu" id="tgSt"></div></div>
  <div class="c"><h3>Alerts in this page</h3><label class="k"><input type="checkbox" id="snd"> Sound</label><label class="k"><input type="checkbox" id="vib"> Vibration</label><label class="k"><input type="checkbox" id="ban"> Banner and flashing tab</label><label class="k"><input type="checkbox" id="pgTg"> Also send Telegram from this page (may duplicate background alerts)</label>
  <label class="f">Minimum confidence to alert (%)</label><input type="number" id="minConf" min="40" max="95"><label class="f">Don’t repeat the same alert for (minutes)</label><input type="number" id="cool" min="1"><div class="row"><button class="g" id="tAl">Test alert</button></div></div>
+ <div class="c"><h3>Connection check</h3><div class="mu s">Tests every data source from this phone and shows which ones work.</div><div class="row"><button class="p" id="diag">Run check</button></div><div class="s" id="dg" style="margin-top:8px"></div></div>
+ <div class="mu s" style="padding:6px">App version 5</div>
  <div class="mu s" style="padding:6px">Signals are analysis, not financial advice. No method wins every trade; always use the stop loss.</div></div>
 </main>
 <script>
 const $=id=>document.getElementById(id),LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},SV=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-const cfg=Object.assign({snd:true,vib:true,ban:true,pgTg:false,minConf:60,cool:60,tgT:"",tgC:"",wk:"",wp:""},LS("cfg",{}));
+const cfg=Object.assign({snd:true,vib:true,ban:true,pgTg:false,minConf:60,cool:60,tgT:"",tgC:"",wk:"",wp:"",mtTok:"",mtAcc:"",mtReg:"new-york",mtSuf:"",mtMap:"",mtData:false,mtAuto:false,mtAck:false,mtRisk:0.5,mtMaxOpen:3,mtMaxDay:3,mtMin:75,mtMaxDD:3,f:null,gate:{},news:false},LS("cfg",{}));
 const TF=["1m","5m","15m","1h","4h","1d"],TFM={"1m":1,"5m":5,"15m":15,"1h":60,"4h":240,"1d":1440},HT={"1m":"15m","5m":"1h","15m":"1h","1h":"4h","4h":"1d","1d":null};
 const NAMES={"GC=F":"Gold futures","SI=F":"Silver futures","PL=F":"Platinum","HG=F":"Copper","CL=F":"Crude oil","BZ=F":"Brent oil","NG=F":"Natural gas","ES=F":"S&P 500 futures","NQ=F":"Nasdaq futures","YM=F":"Dow futures","RTY=F":"Russell futures","^GSPC":"S&P 500","^IXIC":"Nasdaq","^DJI":"Dow Jones","^FTSE":"FTSE 100","^GDAXI":"DAX","^N225":"Nikkei 225","^HSI":"Hang Seng"};
 const lab=s=>NAMES[s]||(/^[A-Z]{6}=X$/.test(s)?s.slice(0,3)+"/"+s.slice(3,6):s.replace(".P"," perp"));
@@ -108,11 +128,38 @@ function analyse(r,htf=0){
  vt("Higher TF",1.5,htf,htf>0?"Higher timeframe trend is bullish.":htf<0?"Higher timeframe trend is bearish.":"Higher timeframe is neutral or unavailable.");
  const sc=V.reduce((a,x)=>a+x.w*x.v,0),dir=sc>0?1:-1,agree=V.filter(x=>x.v*dir>0).length,opp=V.filter(x=>x.v*dir<0).length,conf=Math.min(95,Math.round(Math.abs(sc)/8*100));
  let T=null;if(agree>=4&&opp<=2&&conf>=40){const lv=dir>0?S.L.at(-1):S.H.at(-1);let sl=dir>0?Math.min(lv?lv.p:P-2*A,P-A)-.3*A:Math.max(lv?lv.p:P+2*A,P+A)+.3*A;if(Math.abs(P-sl)>3*A)sl=P-dir*3*A;const rk=Math.abs(P-sl);T={dir,entry:P,sl,tp1:P+dir*1.5*rk,tp2:P+dir*3*rk}}
- return{sc,conf,V,agree,opp,T,P,grade:conf>=80?"A+":conf>=70?"A":conf>=60?"B+":"B",top:V.filter(x=>x.v*dir>0).sort((a,b)=>b.w*b.v*dir-a.w*a.v*dir).slice(0,3).map(x=>x.t)}}
-const mk=(sym,tf,a)=>({sym,tf,...a.T,conf:a.conf,grade:a.grade,agree:a.agree,opp:a.opp,V:a.V,top:a.top,ts:Date.now()});
+ return{sc,conf,V,agree,opp,T,P,adx:adx(r),vp:atrPct(r),ct:k.t,hv:htf,grade:conf>=80?"A+":conf>=70?"A":conf>=60?"B+":"B",top:V.filter(x=>x.v*dir>0).sort((a,b)=>b.w*b.v*dir-a.w*a.v*dir).slice(0,3).map(x=>x.t)}}
+function adx(r,n=14){const L=r.length;if(L<2*n+2)return 0;let tr=0,pd=0,md=0;const T=i=>Math.max(r[i].h-r[i].l,Math.abs(r[i].h-r[i-1].c),Math.abs(r[i].l-r[i-1].c)),U=i=>r[i].h-r[i-1].h,D=i=>r[i-1].l-r[i].l;
+ for(let i=1;i<=n;i++){tr+=T(i);const u=U(i),d=D(i);pd+=u>d&&u>0?u:0;md+=d>u&&d>0?d:0}
+ const dx=[];for(let i=n+1;i<L;i++){const u=U(i),d=D(i);tr=tr-tr/n+T(i);pd=pd-pd/n+(u>d&&u>0?u:0);md=md-md/n+(d>u&&d>0?d:0);const a=100*pd/tr,b=100*md/tr;dx.push(100*Math.abs(a-b)/((a+b)||1))}
+ let a=dx.slice(0,n).reduce((s,x)=>s+x,0)/n;for(let i=n;i<dx.length;i++)a=(a*(n-1)+dx[i])/n;return a}
+function atrPct(r){let a=0;const s=[];for(let i=1;i<r.length;i++){const t=Math.max(r[i].h-r[i].l,Math.abs(r[i].h-r[i-1].c),Math.abs(r[i].l-r[i-1].c));a=i<=14?a+t/14:(a*13+t)/14;if(i>=14)s.push(a)}const w=s.slice(-100),x=w[w.length-1];return 100*w.filter(v=>v<=x).length/w.length}
+const mk=(sym,tf,a)=>({sym,tf,...a.T,conf:a.conf,grade:a.grade,agree:a.agree,opp:a.opp,V:a.V,top:a.top,adx:a.adx,vp:a.vp,ct:a.ct,hv:a.hv,ts:Date.now()});
+// ---- filters shared by live scanning and backtests
+function filt(a,f,tf){if(!f)return null;if(a.agree<(f.agree||4))return"only "+a.agree+" methods agree";
+ if(f.htf&&!(a.hv*a.dir>0))return"higher timeframe does not agree";
+ if(f.adx&&a.adx<f.adx)return"market is choppy (ADX "+a.adx.toFixed(0)+")";
+ if(f.vp&&a.vp<f.vp)return"volatility too low";
+ if(f.h1!=null&&f.h2!=null&&f.h1!==f.h2&&tf!=="1d"){const h=new Date(a.ct).getUTCHours(),ok=f.h1<f.h2?(h>=f.h1&&h<f.h2):(h>=f.h1||h<f.h2);if(!ok)return"outside the trading session"}
+ return null}
+// ---- backtesting (entry on the NEXT candle's open, stop checked before targets, costs included)
+const BO={t1:1.5,t2:3,max:60,cost:.08};
+function sim(r,j,dir,R,o){const e=r[j].o,sl=e-dir*R,t1=e+dir*o.t1*R,t2=e+dir*o.t2*R;let half=false,res=0;
+ for(let k=j;k<r.length&&k<j+o.max;k++){const x=r[k],bars=k-j+1,be=dir>0?x.l<=e:x.h>=e,h2=dir>0?x.h>=t2:x.l<=t2;
+  if(!half){if(dir>0?x.l<=sl:x.h>=sl)return{R:-1-o.cost,bars,out:"stop"};
+   if(dir>0?x.h>=t1:x.l<=t1){half=true;res=.5*o.t1;if(be)return{R:res-o.cost,bars,out:"tp1+be"};if(h2)return{R:res+.5*o.t2-o.cost,bars,out:"tp2"}}}
+  else{if(be)return{R:res-o.cost,bars,out:"tp1+be"};if(h2)return{R:res+.5*o.t2-o.cost,bars,out:"tp2"}}}
+ if(j+o.max>r.length)return null;const x=r[j+o.max-1],p=(x.c-e)*dir/R;return{R:(half?res+.5*p:p)-o.cost,bars:o.max,out:"time"}}
+async function signals(r,hr,tf){const out=[],W=300,ht=HT[tf];let hi=-1,hv=0,last=-2;
+ for(let i=210;i<r.length-1;i++){const T=r[i].t+TFM[tf]*6e4;
+  if(hr&&ht){while(hi+1<hr.length&&hr[hi+1].t+TFM[ht]*6e4<=T)hi++;if(hi!==last){last=hi;hv=hi>=209?stack(hr.slice(Math.max(0,hi-299),hi+1)):0}}
+  const a=analyse(r.slice(Math.max(0,i-W+1),i+1),hv);if(a&&a.T)out.push({i,dir:a.T.dir,conf:a.conf,agree:a.agree,hv,adx:a.adx,vp:a.vp,ct:a.ct,R:Math.abs(a.T.entry-a.T.sl)});
+  if(i%80===0)await new Promise(q=>setTimeout(q,0))}return out}
+function runBT(recs,r,f,tf,o){o=o||BO;const t=[];let busy=-1;for(const s of recs){if(s.i<busy||s.conf<(f.conf||0)||filt(s,f,tf))continue;const x=sim(r,s.i+1,s.dir,s.R,o);if(!x)continue;t.push({i:s.i,R:x.R,out:x.out,dir:s.dir,ct:s.ct});busy=s.i+1+x.bars}return t}
+function stats(t){const n=t.length;if(!n)return{n:0,w:0,e:0,pf:0,sum:0,dd:0,ls:0};let sum=0,pk=0,dd=0,w=0,gw=0,gl=0,ls=0,cl=0;for(const x of t){sum+=x.R;if(x.R>0){w++;gw+=x.R;cl=0}else{gl-=x.R;cl++;ls=Math.max(ls,cl)}pk=Math.max(pk,sum);dd=Math.max(dd,pk-sum)}return{n,w:Math.round(w/n*100),e:+(sum/n).toFixed(2),pf:gl?+(gw/gl).toFixed(2):(gw?99:0),sum:+sum.toFixed(1),dd:+dd.toFixed(1),ls}}
 function plan(s){const B=s.dir>0,R=Math.abs(s.entry-s.sl),d=TFM[s.tf]*3,du=d>=1440?d/1440+"d":d>=60?d/60+"h":d+"m";
  return `⏱ WHEN: ${B?"Buy":"Sell"} now at market, or with a limit at ${fx(s.entry)}. Valid for about ${du} (3 candles).\n🚫 Skip it if price runs past ${fx(s.entry+s.dir*.5*R)} before you enter, or closes beyond the stop.\n🔁 At TP1 close half and move the stop to entry; let the rest run to TP2.\n💰 Risk 1% of your balance: lots = (1% of balance) ÷ (${fx(R)} × contract size).`}
-function msgText(s,url){return `${s.dir>0?"🟢 BUY":"🔴 SELL"} ${lab(s.sym)} · ${s.tf}\nConfidence ${s.conf}% (${s.grade}) · ${s.agree}/11 methods agree\n\nEntry ${fx(s.entry)}\nStop loss ${fx(s.sl)}\nTP1 ${fx(s.tp1)} (1.5R)\nTP2 ${fx(s.tp2)} (3R)\n\n${plan(s)}\n\nWhy: ${s.top.join(" | ")}`+(url?`\n\nFull details: ${url}#${encodeURIComponent(s.sym+"|"+s.tf)}`:"")+"\n⚠️ Not financial advice."}
+function msgText(s,url,bt){return `${s.dir>0?"🟢 BUY":"🔴 SELL"} ${lab(s.sym)} · ${s.tf}\nConfidence ${s.conf}% (${s.grade}) · ${s.agree}/11 methods agree\n\nEntry ${fx(s.entry)}\nStop loss ${fx(s.sl)}\nTP1 ${fx(s.tp1)} (1.5R)\nTP2 ${fx(s.tp2)} (3R)\n\n${plan(s)}${bt&&bt.n?`\n\n📊 Backtest on this market: ${bt.w}% wins, avg ${bt.e>=0?"+":""}${bt.e}R per trade, profit factor ${bt.pf} (${bt.n} trades)`:""}\n\nWhy: ${s.top.join(" | ")}`+(url?`\n\nFull details: ${url}#${encodeURIComponent(s.sym+"|"+s.tf)}`:"")+"\n⚠️ Not financial advice."}
 
 // ---- catalog
 const FXK=["EURUSD","GBPUSD","USDJPY","AUDUSD","USDCAD","USDCHF","NZDUSD","EURGBP","EURJPY","EURCHF","EURAUD","EURCAD","EURNZD","GBPJPY","GBPCHF","GBPAUD","GBPCAD","GBPNZD","AUDJPY","AUDCAD","AUDCHF","AUDNZD","CADJPY","CADCHF","CHFJPY","NZDJPY","NZDCAD","NZDCHF"].map(x=>x+"=X");
@@ -139,13 +186,20 @@ function picker(host,store,onCh){const sel=new Set(LS(store,[]));let grp="All",q
  host.querySelector(".ba").onclick=()=>{shown().forEach(x=>sel.add(x.s));draw();save()};host.querySelector(".bc").onclick=()=>{sel.clear();draw();save()};
  draw();return{get:()=>[...sel],refresh:draw}}
 // ---- data
+const kl=k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}),BY={"1m":"1","5m":"5","15m":"15","1h":"60","4h":"240","1d":"D"},OKB={"1m":"1m","5m":"5m","15m":"15m","1h":"1H","4h":"4H","1d":"1D"};
+async function bybit(sym,tf,n,cat){const j=await jf(`https://api.bybit.com/v5/market/kline?category=${cat}&symbol=${sym}&interval=${BY[tf]}&limit=${n}`);if(!j.result||!j.result.list||!j.result.list.length)throw"x";return j.result.list.slice().reverse().map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
+async function okx(sym,tf,n){const j=await jf(`https://www.okx.com/api/v5/market/candles?instId=${sym.replace(/USDT$/,"-USDT")}&bar=${OKB[tf]}&limit=${Math.min(n,300)}`);if(!j.data||!j.data.length)throw"x";return j.data.slice().reverse().map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
 const chain={b:Promise.resolve(),f:Promise.resolve(),y:Promise.resolve()},gap={b:70,f:70,y:120},sleep=ms=>new Promise(r=>setTimeout(r,ms)),cache={};
 function q(s,fn){const p=chain[s].then(fn);chain[s]=p.catch(()=>{}).then(()=>sleep(gap[s]));return p}
 const wkU=()=>cfg.wk.replace(/\/+$/,"");
 function candles(sym,tf,n=300){const k=sym+tf,h=cache[k];if(h&&Date.now()-h.t<15000)return Promise.resolve(h.d);const s=srcOf(sym);
  return q(s,async()=>{let d;const b=sym.replace(".P","");
-  if(s==="b"){let j;try{j=await jf(`https://api.binance.com/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`)}catch{j=await jf(`https://data-api.binance.vision/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`)}d=j.map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
-  else if(s==="f"){d=(await jf(`https://fapi.binance.com/fapi/v1/klines?symbol=${b}&interval=${tf}&limit=${n}`)).map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}))}
+  if(s==="b"){for(const u of[`https://api.binance.com/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`,`https://data-api.binance.vision/api/v3/klines?symbol=${b}&interval=${tf}&limit=${n}`]){try{d=(await jf(u)).map(kl);break}catch{}}
+   if(!d)try{d=await bybit(b,tf,n,"spot")}catch{}if(!d)try{d=await okx(b,tf,n)}catch{}if(!d&&cfg.wk)try{d=await jf(`${wkU()}/candles?s=${encodeURIComponent(sym)}&tf=${tf}`,{"x-key":cfg.wp})}catch{}
+   if(!d)throw"No crypto source reachable. Run the connection check in the Alerts tab."}
+  else if(s==="f"){try{d=(await jf(`https://fapi.binance.com/fapi/v1/klines?symbol=${b}&interval=${tf}&limit=${n}`)).map(kl)}catch{}
+   if(!d)try{d=await bybit(b,tf,n,"linear")}catch{}if(!d&&cfg.wk)try{d=await jf(`${wkU()}/candles?s=${encodeURIComponent(sym)}&tf=${tf}`,{"x-key":cfg.wp})}catch{}
+   if(!d)throw"No futures source reachable. Run the connection check in the Alerts tab."}
   else{if(!cfg.wk)throw"Needs the background worker (Alerts tab)";d=await jf(`${wkU()}/candles?s=${encodeURIComponent(sym)}&tf=${tf}`,{"x-key":cfg.wp})}
   cache[k]={t:Date.now(),d};return d})}
 // ---- alerts
@@ -159,13 +213,13 @@ async function tg(text){if(!cfg.tgT||!cfg.tgC)return false;try{const r=await fet
 function fire(s,test){const t=`${s.dir>0?"BUY":"SELL"} ${lab(s.sym)} ${s.tf} · ${s.conf}%`;
  if(cfg.snd)beep();if(cfg.vib&&navigator.vibrate)navigator.vibrate([250,100,250]);if(cfg.ban){toast(t,s.dir>0?"B":"S");flash("🔔 "+t)}
  try{if(Notification.permission==="granted")new Notification("SharpScan",{body:t})}catch{}
- if(test||!cfg.wk||cfg.pgTg)tg(msgText(s,appUrl()))}
+ if(test||!cfg.wk||cfg.pgTg)tg(msgText(s,appUrl(),cfg.gate&&cfg.gate[s.sym+"|"+s.tf]))}
 const last=LS("last",{});function maybe(s){const k=s.sym+s.tf+s.dir;if(s.conf<cfg.minConf)return;if(Date.now()-(last[k]||0)<cfg.cool*60000)return;last[k]=Date.now();SV("last",last);fire(s)}
 // ---- scanner (in this page)
 function mkScan(o){let run=false,tm=null,gen=0;
  async function once(){const pairs=o.pairs();if(!pairs.length){o.st("Select at least one market.");return}const g=gen,res=new Map();let bad=0;
   for(let i=0;i<pairs.length&&g===gen;i++){const[sym,tf]=pairs[i];o.st(`Scanning ${lab(sym)} ${tf} (${i+1}/${pairs.length})…`);
-   try{const r=await candles(sym,tf);let ht=0;if(HT[tf]){try{ht=stack(await candles(sym,HT[tf]))}catch{}}const a=analyse(r,ht);if(a&&a.T){const s=mk(sym,tf,a);res.set(sym+tf,s);maybe(s)}}catch(e){bad++;if(bad===1)o.err(String(e))}
+   try{const r=await candles(sym,tf);let ht=0;if(HT[tf]){try{ht=stack(await candles(sym,HT[tf]))}catch{}}const a=analyse(r,ht);if(a&&a.T){const s=mk(sym,tf,a),gk=Object.keys(cfg.gate||{}).length;if(!(cfg.f&&filt(s,cfg.f,tf))&&!(gk&&!cfg.gate[sym+"|"+tf])){res.set(sym+tf,s);maybe(s)}}}catch(e){bad++;if(bad===1)o.err(String(e))}
    o.draw([...res.values()])}
   if(g===gen){o.done();o.st(`Last scan ${new Date().toLocaleTimeString()}`+(bad?` · ${bad} unavailable`:"")+(run?` · next in ${o.iv()}s`:""))}}
  async function loop(){await once();if(run)tm=setTimeout(loop,o.iv()*1000)}
@@ -177,9 +231,12 @@ function render(el,list){list.sort((a,b)=>b.conf-a.conf);list.forEach(s=>reg[s.s
  <div class="lv"><div>Entry<b>${fx(s.entry)}</b></div><div>Stop loss<b class="dn">${fx(s.sl)}</b></div><div>TP1 · 1.5R<b class="up">${fx(s.tp1)}</b></div><div>TP2 · 3R<b class="up">${fx(s.tp2)}</b></div></div>
  <div class="s mu" style="margin-bottom:6px">${s.conf}% confidence · ${s.agree} of 11 methods agree${s.ts?" · found "+ago(s.ts):""}</div><div class="m">${s.V.map(x=>`<span class="${x.v>0?"u":x.v<0?"d":""}">${x.nm}</span>`).join("")}</div>
  <details><summary>Trade plan, reasons and method</summary><div class="plan">${plan(s)}</div><ul>${s.V.map(x=>`<li>${x.t}</li>`).join("")}</ul></details>
- <div class="acts"><button class="g" data-a="tf" data-k="${id}">All timeframes</button><button class="g" data-a="cp" data-k="${id}">Copy</button><button class="g" data-a="tg" data-k="${id}">Send to Telegram</button></div></div>`}).join(""):`<div class="em">No high-confluence setups right now.<br>That’s normal: only trades where most methods agree are shown.</div>`}
+ <div class="acts"><button class="g" data-a="tf" data-k="${id}">All timeframes</button><button class="g" data-a="cp" data-k="${id}">Copy</button><button class="g" data-a="tg" data-k="${id}">Send to Telegram</button>${cfg.mtTok&&cfg.wk?`<button class="p" data-a="mt" data-k="${id}">Trade on MT5</button>`:""}</div></div>`}).join(""):`<div class="em">No high-confluence setups right now.<br>That’s normal: only trades where most methods agree are shown.</div>`}
 document.addEventListener("click",async e=>{const b=e.target.closest("[data-a]");if(!b)return;const s=reg[b.dataset.k];if(!s)return;
  if(b.dataset.a==="cp"){try{await navigator.clipboard.writeText(msgText(s,appUrl()));b.textContent="Copied"}catch{b.textContent="Copy failed"}}
+ else if(b.dataset.a==="mt"){const R=Math.abs(s.entry-s.sl);if(!confirm(`${s.dir>0?"BUY":"SELL"} ${lab(s.sym)} on your MT5 account?\n\nStop distance ${fx(R)}, risk ${cfg.mtRisk}% of equity.\nThis places real orders. Continue?`))return;b.textContent="Placing…";
+  try{const r=await fetch(wkU()+"/mt/trade",{method:"POST",headers:{"x-key":cfg.wp,"Content-Type":"application/json"},body:JSON.stringify({confirm:true,s:{sym:s.sym,dir:s.dir,entry:s.entry,sl:s.sl,tp1:s.tp1,tp2:s.tp2}})}),j=await r.json();
+   if(j.ok){b.textContent="Placed";toast(`Trade placed: ${j.r.sym} ${j.r.lots} lots`,s.dir>0?"B":"S")}else{b.textContent="Not placed";alert("Trade not placed: "+j.error)}}catch(e){b.textContent="Failed";alert("Couldn’t reach the worker.")}}
  else if(b.dataset.a==="tg"){b.textContent=(await tg(msgText(s,appUrl())))?"Sent":"Set up Telegram first"}
  else{$("vmSel").value=s.sym;go("v",1);setVm("1")}});
 function chips(el,items,store){const sel=new Set(LS(store,[]));el.innerHTML="";items.forEach(s=>{const b=document.createElement("button");b.className="chip"+(sel.has(s)?" on":"");b.textContent=s;b.onclick=()=>{sel.has(s)?sel.delete(s):sel.add(s);b.classList.toggle("on");SV(store,[...sel])};el.appendChild(b)});return{get:()=>[...sel],set(a){sel.clear();a.forEach(x=>sel.add(x));SV(store,[...sel]);[...el.children].forEach((b,i)=>b.classList.toggle("on",sel.has(items[i])))}}}
@@ -194,6 +251,48 @@ const mP=picker($("mPick"),"mSelS",()=>$("mW").textContent=mP.get().length),mF=c
 if(!mF.get().length)mF.set(["15m","1h"]);$("mW").textContent=mP.get().length;
 const M=mkScan({pairs:()=>mP.get().flatMap(s=>mF.get().map(t=>[s,t])),iv:()=>+$("mInt").value,st:t=>$("mSt").textContent=t,err:t=>toast(t,""),draw:l=>{render($("mOut"),l);$("mS").textContent=l.length},done:()=>$("mT").textContent=hhmm()});
 $("mGo").onclick=e=>M.toggle(e.target);$("mNow").onclick=()=>{beep0();M.once()};$("mOut").innerHTML='<div class="em">Select markets and timeframes, then scan.</div>';
+// ---- Backtest
+const bP=picker($("bPick"),"bSel"),bF=chips($("bF"),TF,"bF");if(!bF.get().length)bF.set(["15m","1h"]);
+const BT={};let BR=[];
+const getF=()=>({conf:+$("fConf").value||60,agree:+$("fAgree").value||4,htf:$("fHtf").checked,adx:+$("fAdx").value||0,vp:+$("fVp").value||0,h1:$("fH1").value===""?null:+$("fH1").value,h2:$("fH2").value===""?null:+$("fH2").value});
+function setF(f){$("fConf").value=f.conf;$("fAgree").value=f.agree;$("fHtf").checked=!!f.htf;$("fAdx").value=f.adx;$("fVp").value=f.vp;$("fH1").value=f.h1==null?"":f.h1;$("fH2").value=f.h2==null?"":f.h2}
+setF(cfg.f||{conf:60,agree:4,htf:false,adx:0,vp:0,h1:null,h2:null});
+const bo=()=>({...BO,cost:+$("bCost").value||0});
+async function candlesDeep(sym,tf,n){const s=srcOf(sym);
+ if(cfg.wk){try{const d=await jf(`${wkU()}/candles?s=${encodeURIComponent(sym)}&tf=${tf}&deep=1`,{"x-key":cfg.wp});if(d.length>=260)return d.slice(-n)}catch{}}
+ if(s==="y")throw"needs the background worker (Alerts tab)";
+ return q(s,async()=>{const b=sym.replace(".P",""),base=s==="f"?"https://fapi.binance.com/fapi/v1/klines":"https://api.binance.com/api/v3/klines";let out=[],end=Date.now();
+  while(out.length<n){const u=`${base}?symbol=${b}&interval=${tf}&limit=1000&endTime=${end}`;let j;try{j=await jf(u)}catch(e){if(s==="f")throw e;j=await jf(u.replace("api.binance.com/api/v3","data-api.binance.vision/api/v3"))}if(!j.length)break;out=j.map(kl).concat(out);end=j[0][0]-1;if(j.length<1000)break}
+  if(out.length<260)throw"not enough history";return out.slice(-n)})}
+function verdict(a,tr,te){if(a.n<20)return["Too few trades","mu"];if(te.n<8)return["Not enough test data","mu"];if(a.e>0.1&&te.e>0.05&&te.pf>=1.15&&tr.e>0)return["Passes","up"];if(a.e>0&&te.e>0)return["Marginal","mu"];return["Fails","dn"]}
+$("bRun").onclick=async()=>{const syms=bP.get(),tfs=bF.get();if(!syms.length||!tfs.length){$("bSt").textContent="Select markets and timeframes first.";return}
+ for(const k in BT)delete BT[k];$("bRun").disabled=true;const n=+$("bN").value,tot=syms.length*tfs.length;let i=0,bad=0;
+ for(const tf of tfs)for(const sym of syms){i++;$("bSt").textContent=`Loading ${lab(sym)} ${tf} (${i}/${tot})…`;
+  try{const r=await candlesDeep(sym,tf,n);let hr=null;if(HT[tf]){try{hr=await candlesDeep(sym,HT[tf],Math.ceil(n*TFM[tf]/TFM[HT[tf]])+300)}catch{}}
+   $("bSt").textContent=`Replaying ${lab(sym)} ${tf} (${i}/${tot})…`;BT[sym+"|"+tf]={sym,tf,r,recs:await signals(r,hr,tf)}}catch(e){bad++;BT[sym+"|"+tf]={sym,tf,err:String(e)}}}
+ $("bRun").disabled=false;$("bSt").textContent="Done."+(bad?` ${bad} failed to load.`:"");bCalc()};
+$("bRe").onclick=()=>{if(!Object.keys(BT).length){$("bSt").textContent="Run a backtest first.";return}bCalc()};
+function bCalc(){const f=getF(),o=bo();BR=[];const A=[],TR=[],TE=[];
+ for(const k in BT){const e=BT[k];if(e.err){BR.push({k,e,err:e.err});continue}
+  const t=runBT(e.recs,e.r,f,e.tf,o),cut=210+Math.floor((e.r.length-210)*.6),tr=t.filter(x=>x.i<cut),te=t.filter(x=>x.i>=cut),a=stats(t),sa=stats(tr),st=stats(te);
+  BR.push({k,e,a,sa,st,v:verdict(a,sa,st)});A.push(...t);TR.push(...tr);TE.push(...te)}
+ BR.sort((x,y)=>(y.st?y.st.e:-9)-(x.st?x.st.e:-9));const sA=stats(A),sT=stats(TE);
+ const msg=sT.n<15?"Too little unseen data to judge. Use more candles or more markets.":sT.e>0.05&&sT.pf>=1.1?"Positive on data it never saw. That is a good sign, not a guarantee.":"No reliable edge on unseen data with these settings. Don’t trade them live; try Find best filters or other markets.";
+ const row=r=>r.err?`<tr><td>${lab(r.e.sym)} ${r.e.tf}</td><td colspan="6" class="dn">${r.err}</td></tr>`:`<tr><td>${lab(r.e.sym)} <span class="mu">${r.e.tf}</span></td><td>${r.a.n}</td><td>${r.a.w}%</td><td>${r.a.e}</td><td>${r.a.pf}</td><td>${r.st.n?r.st.e:"–"}</td><td class="${r.v[1]}">${r.v[0]}</td></tr>`;
+ $("bOut").innerHTML=`<div class="c"><h3>All selected markets</h3><div class="lv"><div>Trades<b>${sA.n}</b></div><div>Win rate<b>${sA.w}%</b></div><div>Avg per trade<b class="${sA.e>=0?"up":"dn"}">${sA.e}R</b></div><div>Profit factor<b>${sA.pf}</b></div><div>Worst drawdown<b>${sA.dd}R</b></div><div>Longest losing run<b>${sA.ls}</b></div></div>
+ <div class="s"><b>Unseen data (last 40%):</b> ${sT.n} trades, ${sT.w}% wins, ${sT.e}R avg, profit factor ${sT.pf}.</div><div class="s mu" style="margin-top:6px">${msg}</div><div class="s mu" style="margin-top:6px">R means your risk per trade. Results include trading costs. Past results never guarantee future ones, and testing many filters can make results look better than they will be.</div></div>
+ <div class="c" style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><tr class="mu"><td>Market</td><td>Trades</td><td>Win</td><td>Avg R</td><td>PF</td><td>Test R</td><td>Verdict</td></tr>${BR.map(row).join("")}</table></div>`}
+$("bOpt").onclick=async()=>{const keys=Object.keys(BT).filter(k=>!BT[k].err);if(!keys.length){$("bSt").textContent="Run a backtest first.";return}
+ $("bSt").textContent="Searching filter combinations on the first 60% of history…";await new Promise(r=>setTimeout(r,30));const o=bo();let best=null;
+ for(const conf of[50,60,70,80])for(const agree of[4,5,6,7])for(const htf of[false,true])for(const adx of[0,18,25])for(const vp of[0,25]){const f={...getF(),conf,agree,htf,adx,vp},TR=[];
+  for(const k of keys){const e=BT[k],cut=210+Math.floor((e.r.length-210)*.6);TR.push(...runBT(e.recs,e.r,f,e.tf,o).filter(x=>x.i<cut))}
+  const s=stats(TR);if(s.n>=40&&s.e>0){const sc=s.e*Math.sqrt(s.n);if(!best||sc>best.sc)best={sc,f}}}
+ if(!best){$("bSt").textContent="No filter set was profitable on the training data. That is an honest result: this scanner may have no edge on these markets and timeframes.";return}
+ setF(best.f);bCalc();$("bSt").textContent="Best filters set (chosen using only the first 60% of history). Check the unseen-data numbers below before trusting them."};
+$("bApply").onclick=()=>{if(!BR.length){$("bAp").textContent="Run a backtest first.";return}cfg.f=getF();cfg.gate={};BR.forEach(r=>{if(r.v&&r.v[0]==="Passes")cfg.gate[r.k]={n:r.a.n,e:r.a.e,pf:r.a.pf,w:r.a.w}});
+ const n=Object.keys(cfg.gate).length;if(!n){cfg.gate={"none":{}};}SV("cfg",cfg);
+ $("bAp").textContent=n?`Applied. ${n} market and timeframe combos passed and are the only ones that will alert. Now go to Alerts and tap Save and sync.`:"Applied, but nothing passed, so no alerts will be sent until you change the filters or tap Clear approvals."};
+$("bClear").onclick=()=>{cfg.gate={};SV("cfg",cfg);$("bAp").textContent="Approvals cleared. All markets can alert again (filters still apply). Tap Save and sync in Alerts."};
 // Charts
 function drawC(cv,r,N){const W=cv.width=cv.clientWidth*2,H=cv.height=cv.clientHeight*2,x=cv.getContext("2d"),v=r.slice(-N),c=r.map(z=>z.c),e20=ema(c,20).slice(-N),e50=ema(c,50).slice(-N),hi=Math.max(...v.map(z=>z.h)),lo=Math.min(...v.map(z=>z.l)),Y=p=>H-8-(p-lo)/(hi-lo||1)*(H-16),w=W/N;x.clearRect(0,0,W,H);
  v.forEach((z,i)=>{const X=i*w+w/2;x.strokeStyle=x.fillStyle=z.c>=z.o?"#27d17f":"#ff5864";x.beginPath();x.moveTo(X,Y(z.h));x.lineTo(X,Y(z.l));x.stroke();x.fillRect(X-w*.35,Y(Math.max(z.o,z.c)),w*.7,Math.max(2,Math.abs(Y(z.o)-Y(z.c))))});
@@ -204,7 +303,7 @@ for(let i=0;i<4;i++){const d=document.createElement("div");d.className="c";d.inn
  const P={d,tf:"15m"};panels.push(P);d.querySelector(".sy").onchange=()=>{SV("vSel",panels.map(p=>p.d.querySelector(".sy").value));load(P)};
  d.querySelectorAll(".tf button").forEach(b=>b.onclick=()=>{d.querySelectorAll(".tf button").forEach(x=>x.classList.remove("on"));b.classList.add("on");P.tf=b.textContent;load(P)})}
 function badge(v,a,conf){v.className="vd"+(a&&a.T&&a.conf>=conf?(a.T.dir>0?" B":" S"):"");v.textContent=a&&a.T&&a.conf>=conf?(a.T.dir>0?"BUY ":"SELL ")+a.conf+"%":"WAIT"}
-async function load(P){const s=P.d.querySelector(".sy").value,st=P.d.querySelector(".st");try{const r=await candles(s,P.tf,300);drawC(P.d.querySelector("canvas"),r,80);const l=r.at(-1),f=r.at(-2),ch=(l.c-f.c)/f.c*100;P.d.querySelector(".pr").textContent=fx(l.c);const e=P.d.querySelector(".ch");e.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";e.className="ch s "+(ch>=0?"up":"dn");badge(P.d.querySelector(".vd"),analyse(r,0),50);st.textContent="Updated "+new Date().toLocaleTimeString()}catch(e){st.textContent=String(e)}}
+async function load(P){const s=P.d.querySelector(".sy").value,st=P.d.querySelector(".st");try{const r=await candles(s,P.tf,300);drawC(P.d.querySelector("canvas"),r,80);const l=r.at(-1),f=r.at(-2),ch=(l.c-f.c)/f.c*100;P.d.querySelector(".pr").textContent=fx(l.c);const e=P.d.querySelector(".ch");e.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";e.className="ch s "+(ch>=0?"up":"dn");badge(P.d.querySelector(".vd"),analyse(r,0),50);st.className="s mu st";st.textContent="Updated "+new Date().toLocaleTimeString()}catch(e){st.className="s dn st";st.textContent="Can’t load: "+e}}
 function refreshLive(){panels.forEach(p=>{const e=p.d.querySelector(".sy"),v=e.value;e.innerHTML=opts(v)})}
 // one market, all timeframes
 $("vmg").innerHTML=TF.map(t=>`<div class="c"><div class="top"><b>${t}</b><span class="s" id="va${t}"></span><span class="ch s" id="vc${t}"></span><span class="vd" id="vv${t}" style="margin-left:auto">…</span></div><canvas id="vk${t}" style="height:120px;margin-top:6px"></canvas></div>`).join("");
@@ -212,7 +311,7 @@ const fillVm=()=>{const v=$("vmSel").value||LS("vmSym","BTCUSDT");$("vmSel").inn
 let vmGen=0;async function vmLoad(){const g=++vmGen,s=$("vmSel").value;SV("vmSym",s);
  for(const t of TF){if(g!==vmGen)return;const v=$("vv"+t);try{const r=await candles(s,t,300);let ht=0;if(HT[t]){try{ht=stack(await candles(s,HT[t],300))}catch{}}
   drawC($("vk"+t),r,60);const tr=stack(r),l=r.at(-1),f=r.at(-2),ch=(l.c-f.c)/f.c*100,a=$("va"+t);a.textContent=tr>0?"▲ uptrend":tr<0?"▼ downtrend":"▬ no trend";a.className="s "+(tr>0?"up":tr<0?"dn":"mu");
-  const c=$("vc"+t);c.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";c.className="ch s "+(ch>=0?"up":"dn");badge(v,analyse(r,ht),50)}catch(e){v.textContent="n/a";v.className="vd"}}}
+  const c=$("vc"+t);c.textContent=(ch>=0?"+":"")+ch.toFixed(2)+"%";c.className="ch s "+(ch>=0?"up":"dn");badge(v,analyse(r,ht),50)}catch(e){v.textContent="n/a";v.className="vd";const z=$("va"+t);z.textContent=String(e).slice(0,60);z.className="s dn"}}}
 $("vmSel").onchange=vmLoad;
 function setVm(m){document.querySelectorAll("[data-vm]").forEach(b=>b.classList.toggle("on",b.dataset.vm===m));$("v4").style.display=m==="4"?"":"none";$("v1").style.display=m==="1"?"":"none";m==="4"?tick():vmLoad()}
 document.querySelectorAll("[data-vm]").forEach(b=>b.onclick=()=>setVm(b.dataset.vm));
@@ -224,6 +323,7 @@ async function loadSig(){const info=$("gInfo");
  try{const j=await jf(wkU()+"/setups",{"x-key":cfg.wp});$("gN").textContent=j.setups.length;$("gM").textContent=j.watch;$("gT").textContent=j.run?new Date(j.run).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"–";
   const cyc=Math.max(1,Math.ceil(j.watch*j.tfs.length/12));info.innerHTML=`Background scanner on: ${j.watch} markets × ${j.tfs.join(", ")||"no timeframes"}. Each is re-checked about every ${cyc} min. Setups stay listed while they are still valid.`;
   render($("gOut"),j.setups);pill("pBg",true,"Background on");
+  const h=j.hist||[],S=stats(h);$("gScore").innerHTML=h.length?`<div class="c"><h3>Live scoreboard</h3><div class="mu s">Real results of the alerts sent, tracked automatically with the same exit rules as the backtest (R = your risk per trade).</div><div class="stats" style="margin-top:8px"><div><b>${S.n}</b><span class="mu s">finished</span></div><div><b>${S.w}%</b><span class="mu s">win rate</span></div><div><b class="${S.e>=0?"up":"dn"}">${S.e}R</b><span class="mu s">avg per trade</span></div></div><div class="m">${h.slice(-16).map(x=>`<span class="${x.R>0?"u":"d"}">${lab(x.sym)} ${x.R>0?"+":""}${x.R}R</span>`).join("")}</div></div>`:'<div class="c s mu">Live scoreboard: results of sent alerts will appear here as each setup finishes.</div>';
   if(pend){const el=[...document.querySelectorAll("#gOut .sg")].find(x=>x.dataset.id===pend);if(el){el.classList.add("hl");el.querySelector("details").open=true;el.scrollIntoView({block:"center"})}pend=""}
  }catch(e){info.textContent="Can’t reach the background scanner: "+e+". Check the URL and password in the Alerts tab.";pill("pBg",false,"Background error")}}
 setInterval(()=>{if($("sg").classList.contains("on"))loadSig()},30000);
@@ -231,8 +331,8 @@ setInterval(()=>{if($("sg").classList.contains("on"))loadSig()},30000);
 function go(p,skip){document.querySelectorAll("nav button,.pg").forEach(x=>x.classList.remove("on"));document.querySelector(`nav [data-p="${p}"]`).classList.add("on");$(p).classList.add("on");if(p==="v"&&!skip)setVm($("v1").style.display==="none"?"4":"1");if(p==="sg")loadSig()}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.p));
 // settings
-["snd","vib","ban","pgTg"].forEach(k=>{$(k).checked=cfg[k];$(k).onchange=()=>{cfg[k]=$(k).checked;SV("cfg",cfg)}});
-["minConf","cool","tgT","tgC","wk","wp"].forEach(k=>{$(k).value=cfg[k];$(k).oninput=()=>{cfg[k]=["minConf","cool"].includes(k)?+$(k).value:$(k).value.trim();SV("cfg",cfg)}});
+["snd","vib","ban","pgTg","mtData","mtAuto","mtAck","news"].forEach(k=>{$(k).checked=cfg[k];$(k).onchange=()=>{cfg[k]=$(k).checked;SV("cfg",cfg)}});
+["minConf","cool","tgT","tgC","wk","wp","mtTok","mtAcc","mtReg","mtSuf","mtMap","mtRisk","mtMaxOpen","mtMaxDay","mtMin","mtMaxDD"].forEach(k=>{$(k).value=cfg[k];$(k).oninput=()=>{cfg[k]=["minConf","cool","mtRisk","mtMaxOpen","mtMaxDay","mtMin","mtMaxDD"].includes(k)?+$(k).value:$(k).value.trim();SV("cfg",cfg)}});
 const bgT=chips($("bgTf"),TF,"bgTf");if(!bgT.get().length)bgT.set(["15m","1h"]);
 const demo={sym:"BTCUSDT",tf:"15m",dir:1,conf:78,grade:"A",agree:8,entry:97000,sl:96400,tp1:97900,tp2:98800,top:["Trend: bullish stack","Momentum rising","Pullback to support"]};
 $("tAl").onclick=()=>{beep0();fire(demo,true)};
@@ -240,10 +340,18 @@ $("tgTest").onclick=async()=>{$("tgSt").textContent=(await tg("✅ SharpScan is 
 $("tgF").onclick=async()=>{try{const j=await jf(`https://api.telegram.org/bot${cfg.tgT}/getUpdates`);const m=[...j.result].reverse().find(u=>u.message);if(!m){$("tgSt").textContent="No message found. Send “hi” to your bot first, then try again.";return}cfg.tgC=String(m.message.chat.id);$("tgC").value=cfg.tgC;SV("cfg",cfg);$("tgSt").textContent="Chat ID found. Tap Send test."}catch{$("tgSt").textContent="Couldn’t read updates. Check the token."}};
 $("bgSave").onclick=async()=>{const st=$("bgSt");if(!cfg.wk||!cfg.wp){st.textContent="Enter the worker URL and password first.";return}
  const w=aP.get(),t=bgT.get();if(!w.length||!t.length){st.textContent="Select markets on the Watchlist page and at least one timeframe here.";return}
- try{const r=await fetch(wkU()+"/config",{method:"POST",headers:{"x-key":cfg.wp,"Content-Type":"application/json"},body:JSON.stringify({watch:w,tfs:t,minConf:cfg.minConf,cool:cfg.cool,tgT:cfg.tgT,tgC:cfg.tgC,appUrl:appUrl()})});const j=await r.json();
+ try{const r=await fetch(wkU()+"/config",{method:"POST",headers:{"x-key":cfg.wp,"Content-Type":"application/json"},body:JSON.stringify({watch:w,tfs:t,minConf:cfg.f?cfg.f.conf:cfg.minConf,f:cfg.f,gate:cfg.gate,news:cfg.news,cool:cfg.cool,tgT:cfg.tgT,tgC:cfg.tgC,appUrl:appUrl(),mt:cfg.mtTok&&cfg.mtAcc?{tok:cfg.mtTok,acc:cfg.mtAcc,region:cfg.mtReg||"new-york",suffix:cfg.mtSuf,map:parseMap(cfg.mtMap),data:cfg.mtData,ack:cfg.mtAck,auto:cfg.mtAuto&&cfg.mtAck,risk:cfg.mtRisk,maxOpen:cfg.mtMaxOpen,maxDay:cfg.mtMaxDay,minConf:cfg.mtMin,maxDD:cfg.mtMaxDD}:null})});const j=await r.json();
   if(!r.ok)throw j.error||r.status;st.textContent=`Synced ${w.length} markets × ${t.length} timeframes. Each is re-checked about every ${Math.ceil(j.pairs/12)} min.`+(cfg.tgT&&cfg.tgC?"":" Add Telegram below to get alerts.")+(appUrl()?"":" Host this page online so Telegram links open it.");pill("pBg",true,"Background on")}catch(e){st.textContent="Failed: "+e;pill("pBg",false,"Background error")}};
+function parseMap(t){const o={};String(t||"").split("\n").forEach(l=>{const i=l.lastIndexOf(">");if(i>0){const k=l.slice(0,i).trim(),v=l.slice(i+1).trim();if(k&&v)o[k]=v}});return o}
+$("mtTest").onclick=async()=>{const o=$("mtSt");o.textContent="Testing…";try{const r=await fetch(wkU()+"/mt/test",{method:"POST",headers:{"x-key":cfg.wp}}),j=await r.json();
+  o.innerHTML=j.ok?`<span class="up">Connected.</span> ${j.name||""} ${j.server||""}. Balance ${j.balance} ${j.currency||""}, equity ${j.equity}, ${j.positions??"?"} open trades. Trading allowed: ${j.tradeAllowed===false?"no":"yes"}. MT5 prices: ${j.candles?"working":"not available ("+(j.candleError||"")+"), other sources will be used"}.`:`<span class="dn">Failed:</span> ${j.error}`}catch(e){o.innerHTML='<span class="dn">Can’t reach the worker.</span> Sync first.'}};
 $("bgTest").onclick=async()=>{try{const r=await fetch(wkU()+"/test",{headers:{"x-key":cfg.wp}});const j=await r.json();$("bgSt").textContent=j.ok?"Sent. Check Telegram.":"Failed: save and sync first, and check the Telegram token and chat ID."}catch(e){$("bgSt").textContent="Can’t reach the worker."}};
 if(cfg.tgT&&cfg.tgC)pill("pTg",true,"Telegram on");
+$("diag").onclick=async()=>{const o=$("dg"),T=[["Binance","https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=5"],["Binance mirror","https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=5"],["Bybit","https://api.bybit.com/v5/market/kline?category=spot&symbol=BTCUSDT&interval=15&limit=5"],["OKX","https://www.okx.com/api/v5/market/candles?instId=BTC-USDT&bar=15m&limit=5"]];
+ if(cfg.wk)T.push(["Your worker, crypto",wkU()+"/candles?s=BTCUSDT&tf=15m",{"x-key":cfg.wp}],["Your worker, forex (Yahoo)",wkU()+"/candles?s=EURUSD%3DX&tf=15m",{"x-key":cfg.wp}]);else T.push(["Your worker",null]);
+ const L=[];o.textContent="Testing…";let cr=0;for(const[n,u,h]of T){if(!u){L.push(`<div class="mu">Your worker: not set up yet (needed for forex, gold futures, indices, stocks)</div>`);continue}
+  try{await jf(u,h);L.push(`<div class="up">OK: ${n}</div>`);if(/Binance|Bybit|OKX/.test(n))cr++}catch(e){L.push(`<div class="dn">Failed: ${n} (${e})</div>`)}o.innerHTML=L.join("")}
+ if(!cr&&!cfg.wk)L.push('<div style="margin-top:6px">No crypto source works from your connection. Turn off any VPN or data saver and try mobile data or another Wi-Fi. If that fails, set up the worker, which fetches data from its own servers.</div>');o.innerHTML=L.join("")};
 $("gOut").innerHTML='<div class="em">Nothing yet.</div>';
 loadMarkets();loadSig();if(pend)go("sg");
 </script></body></html>
